@@ -2,8 +2,8 @@ DogTracks — Behavior & Training Tracker
 DogTracks is a mobile application designed to help dog owners, trainers, and shelters track training sessions, record behaviors, identify triggers, and visualize long‑term progress. Many owners struggle to stay consistent with training or remember what caused certain behaviors. DogTracks solves this by providing structured logging, multi‑dog profiles, and clear visual insights that reveal patterns over time. Built using Flutter and Firebase, the app is lightweight, accessible, and designed for quick, intuitive interaction.
 
 Team Members
-- Kyler Cradic
 - Landon Cardenas
+- Kyler Cradic
 - Noel Martinson
 - Alison Waldsmith
 
