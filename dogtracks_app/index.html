@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f7f2">
+    <meta name="description" content="A simple place to track dog training and behavior progress.">
+    <title>DogTracks | Training journal</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="src/app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="DogTracks home">
+        <span class="brand-mark" aria-hidden="true">D</span>
+        <span>DogTracks</span>
+      </a>
+      <div class="topbar-actions">
+        <span class="local-badge"><span aria-hidden="true"></span> Saved on this device</span>
+        <button class="button button-primary" id="open-dog-dialog" type="button">Add a dog <span aria-hidden="true">+</span></button>
+      </div>
+    </header>
+
+    <main id="app" class="page-shell" aria-live="polite">
+      <p class="loading">Loading your training journal…</p>
+    </main>
+
+    <dialog id="dog-dialog" class="dialog" aria-labelledby="dog-dialog-title">
+      <form id="dog-form" class="dialog-card">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">DOG PROFILE</p>
+            <h2 id="dog-dialog-title">Add a dog</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog aria-label="Close">×</button>
+        </div>
+        <label>Name <input name="name" required maxlength="60" autocomplete="off" placeholder="e.g. Bailey"></label>
+        <div class="form-row">
+          <label>Breed <input name="breed" maxlength="80" placeholder="e.g. Labrador mix"></label>
+          <label>Age in years <input name="ageYears" type="number" min="0" max="40" step="1" value="1"></label>
+        </div>
+        <label>Notes <textarea name="notes" rows="3" maxlength="500" placeholder="Anything helpful to remember"></textarea></label>
+        <div class="dialog-actions">
+          <button class="button button-quiet" type="button" data-close-dialog>Cancel</button>
+          <button class="button button-primary" type="submit">Save profile</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>
