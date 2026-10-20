@@ -1,0 +1,133 @@
+mutation CreateUser($displayName: String!, $email: String!) @auth(level: USER) {
+  user_insert(data: { id_expr: "auth.uid", displayName: $displayName, email: $email })
+}
+
+mutation UpdateUser($displayName: String!) @auth(level: USER) {
+  user_update(key: { id_expr: "auth.uid" }, data: { displayName: $displayName })
+}
+
+mutation DeleteUser @auth(level: USER) {
+  user_delete(key: { id_expr: "auth.uid" })
+}
+
+query GetUser @auth(level: USER) {
+  user(key: { id_expr: "auth.uid" }) {
+    id
+    displayName
+    email
+  }
+}
+
+query ListAllUsers @auth(level: PUBLIC, insecureReason: "Listing users is permitted for directory purposes.") {
+  users {
+    id
+    displayName
+  }
+}
+
+mutation CreateDog($name: String!, $breed: String!, $birthDate: Date!) @auth(level: USER) {
+  dog_insert(data: { name: $name, breed: $breed, birthDate: $birthDate, ownerId_expr: "auth.uid" })
+}
+
+mutation UpdateDog($id: UUID!, $photoUrl: String!) @auth(level: USER) {
+  dog_update(key: { id: $id }, data: { photoUrl: $photoUrl })
+}
+
+mutation DeleteDog($id: UUID!) @auth(level: USER) {
+  dog_delete(key: { id: $id })
+}
+
+query GetDog($id: UUID!) @auth(level: USER) {
+  dog(id: $id) {
+    name
+    breed
+    owner {
+      displayName
+    }
+  }
+}
+
+query ListMyDogs @auth(level: USER) {
+  dogs(where: { ownerId: { eq_expr: "auth.uid" } }) {
+    id
+    name
+  }
+}
+
+mutation CreateTrainingGoal($dogId: UUID!, $title: String!, $targetDate: Date!) @auth(level: USER) {
+  trainingGoal_insert(data: { dogId: $dogId, title: $title, targetDate: $targetDate })
+}
+
+mutation UpdateTrainingGoal($id: UUID!, $status: String!) @auth(level: USER) {
+  trainingGoal_update(key: { id: $id }, data: { status: $status })
+}
+
+mutation DeleteTrainingGoal($id: UUID!) @auth(level: USER) {
+  trainingGoal_delete(key: { id: $id })
+}
+
+query GetTrainingGoal($id: UUID!) @auth(level: USER) {
+  trainingGoal(id: $id) {
+    title
+    status
+  }
+}
+
+query ListDogGoals($dogId: UUID!) @auth(level: USER) {
+  trainingGoals(where: { dogId: { eq: $dogId } }) {
+    title
+    targetDate
+  }
+}
+
+mutation CreateTrainingSession($dogId: UUID!, $date: Date!, $duration: Int!, $skill: String!) @auth(level: USER) {
+  trainingSession_insert(data: { dogId: $dogId, date: $date, durationMinutes: $duration, skillFocused: $skill })
+}
+
+mutation UpdateTrainingSession($id: UUID!, $rating: Int!) @auth(level: USER) {
+  trainingSession_update(key: { id: $id }, data: { successRating: $rating })
+}
+
+mutation DeleteTrainingSession($id: UUID!) @auth(level: USER) {
+  trainingSession_delete(key: { id: $id })
+}
+
+query GetTrainingSession($id: UUID!) @auth(level: USER) {
+  trainingSession(id: $id) {
+    skillFocused
+    successRating
+  }
+}
+
+query ListDogSessions($dogId: UUID!) @auth(level: USER) {
+  trainingSessions(where: { dogId: { eq: $dogId } }) {
+    date
+    skillFocused
+  }
+}
+
+mutation CreateBehaviorLog($dogId: UUID!, $behaviorType: String!, $timestamp: Timestamp!) @auth(level: USER) {
+  behaviorLog_insert(data: { dogId: $dogId, behaviorType: $behaviorType, timestamp: $timestamp })
+}
+
+mutation UpdateBehaviorLog($id: UUID!, $notes: String!) @auth(level: USER) {
+  behaviorLog_update(key: { id: $id }, data: { notes: $notes })
+}
+
+mutation DeleteBehaviorLog($id: UUID!) @auth(level: USER) {
+  behaviorLog_delete(key: { id: $id })
+}
+
+query GetBehaviorLog($id: UUID!) @auth(level: USER) {
+  behaviorLog(id: $id) {
+    behaviorType
+    notes
+  }
+}
+
+query ListDogLogs($dogId: UUID!) @auth(level: USER) {
+  behaviorLogs(where: { dogId: { eq: $dogId } }) {
+    timestamp
+    behaviorType
+  }
+}

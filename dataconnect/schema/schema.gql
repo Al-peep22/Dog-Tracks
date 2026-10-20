@@ -1,0 +1,39 @@
+type User @table {
+  email: String!
+  displayName: String!
+  role: String
+}
+
+type Dog @table {
+  name: String!
+  breed: String!
+  birthDate: Date!
+  photoUrl: String
+  owner: User
+}
+
+type TrainingSession @table {
+  dog: Dog!
+  date: Date!
+  durationMinutes: Int!
+  skillFocused: String!
+  notes: String
+  successRating: Int
+}
+
+type BehaviorLog @table {
+  dog: Dog!
+  timestamp: Timestamp!
+  behaviorType: String!
+  intensityLevel: Int
+  triggerTags: [String]
+  notes: String
+}
+
+type TrainingGoal @table {
+  dog: Dog!
+  title: String!
+  targetDate: Date!
+  status: String
+  description: String
+}
