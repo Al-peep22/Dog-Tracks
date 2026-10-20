@@ -1,3 +1,25 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD7TWP-avTLAy-TlxfZhN-Ck3pR-fp6su0",
+  authDomain: "dog-tracks-24243.firebaseapp.com",
+  projectId: "dog-tracks-24243",
+  storageBucket: "dog-tracks-24243.firebasestorage.app",
+  messagingSenderId: "405971058990",
+  appId: "1:405971058990:web:fa19a1e4e69892663ababf",
+  measurementId: "G-CVLKTJ3LTY"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
 import { createDog, createSession, deleteDog, loadState, saveState } from './storage.js';
 
 const root = document.querySelector('#app');
