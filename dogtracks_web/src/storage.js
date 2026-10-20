@@ -45,7 +45,7 @@ const starterState = {
 // Validate the entire state object to ensure nothing is corrupted
 // -------------------------------------------------------------
 function assertState(state) {
-  // Basic shape check: state must exist and have dogs + sessions arrays
+  // Basic shape check
   if (!state || !Array.isArray(state.dogs) || !Array.isArray(state.sessions)) {
     throw new Error('DogTracks data is invalid. Clear this site\'s saved data or contact the project team.');
   }
@@ -79,11 +79,11 @@ function assertState(state) {
       sessionIds.has(session.id) || // duplicate session ID
       !dogIds.has(session.dogId) || // session must belong to a real dog
       typeof session.behavior !== 'string' ||
-      !session.behavior.trim() || // behavior must not be empty
+      !session.behavior.trim() ||
       typeof session.trigger !== 'string' ||
       typeof session.notes !== 'string' ||
       typeof session.occurredAt !== 'string' ||
-      Number.isNaN(Date.parse(session.occurredAt)) // must be valid date string
+      Number.isNaN(Date.parse(session.occurredAt)) // must be valid date
     ) {
       throw new Error('DogTracks training history is invalid. Clear this site\'s saved data or contact the project team.');
     }
@@ -92,15 +92,14 @@ function assertState(state) {
 }
 
 // -------------------------------------------------------------
-// Load saved state from localStorage (or seed starterState)
+// Load saved state from localStorage
 // -------------------------------------------------------------
 export function loadState(storage = globalThis.localStorage) {
-  // Ensure storage is available (e.g., not blocked)
   if (!storage) throw new Error('Browser storage is unavailable. Open DogTracks in a current browser.');
 
   const saved = storage.getItem(STORAGE_KEY);
 
-  // If no saved data exists, use starterState and save it
+  // If no saved data exists, use starterState
   if (saved === null) {
     const initialState = structuredClone(starterState);
     saveState(initialState, storage);
@@ -112,7 +111,6 @@ export function loadState(storage = globalThis.localStorage) {
   try {
     state = JSON.parse(saved);
   } catch (error) {
-    // If JSON is corrupted, throw a visible error instead of silently resetting
     throw new Error('Could not read saved DogTracks data. Clear this site\'s saved data to start fresh.', { cause: error });
   }
 
@@ -126,11 +124,7 @@ export function loadState(storage = globalThis.localStorage) {
 // -------------------------------------------------------------
 export function saveState(state, storage = globalThis.localStorage) {
   if (!storage) throw new Error('Browser storage is unavailable. Open DogTracks in a current browser.');
-
-  // Validate before saving to avoid persisting bad data
-  assertState(state);
-
-  // Save as JSON string
+  assertState(state); // ensure data is valid before saving
   storage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
@@ -138,11 +132,9 @@ export function saveState(state, storage = globalThis.localStorage) {
 // Create a new dog profile
 // -------------------------------------------------------------
 export function createDog(state, input, id = globalThis.crypto.randomUUID()) {
-  // Clean up name and ensure it's not empty
   const name = input.name.trim();
   if (!name) throw new Error('Enter a name for the dog.');
 
-  // Convert age to a number and validate range
   const ageYears = Number(input.ageYears);
   if (!Number.isInteger(ageYears) || ageYears < 0 || ageYears > 40) {
     throw new Error('Enter an age from 0 to 40 whole years.');
@@ -157,10 +149,8 @@ export function createDog(state, input, id = globalThis.crypto.randomUUID()) {
     notes: input.notes.trim(),
   };
 
-  // Create next state with the new dog appended
+  // Add dog to state
   const nextState = { ...state, dogs: [...state.dogs, dog] };
-
-  // Validate new state before returning
   assertState(nextState);
   return nextState;
 }
@@ -171,19 +161,18 @@ export function createDog(state, input, id = globalThis.crypto.randomUUID()) {
 export function createSession(
   state,
   input,
-  occurredAt = new Date().toISOString(), // default timestamp: now
-  id = globalThis.crypto.randomUUID()     // default unique ID
+  occurredAt = new Date().toISOString(), // default timestamp
+  id = globalThis.crypto.randomUUID()
 ) {
-  // Ensure the dog exists in the current state
+  // Ensure dog exists
   if (!state.dogs.some((dog) => dog.id === input.dogId)) {
     throw new Error('Choose a dog before logging a training entry.');
   }
 
-  // Clean up behavior and ensure it's not empty
   const behavior = input.behavior.trim();
   if (!behavior) throw new Error('Enter a behavior or training activity.');
 
-  // Build the session object
+  // Build session object
   const session = {
     id,
     dogId: input.dogId,
@@ -193,26 +182,25 @@ export function createSession(
     occurredAt,
   };
 
-  // Create next state with the new session appended
+  // Add session to state
   const nextState = { ...state, sessions: [...state.sessions, session] };
-
-  // Validate new state before returning
   assertState(nextState);
   return nextState;
 }
 
 // -------------------------------------------------------------
-// Delete a dog and all its associated sessions
+// Delete a dog and all its sessions
 // -------------------------------------------------------------
 export function deleteDog(state, dogId) {
-  // Ensure the dog exists before attempting to delete
   if (!state.dogs.some((dog) => dog.id === dogId)) {
     throw new Error('That dog profile no longer exists.');
   }
 
-  // Return a new state without that dog and without its sessions
   return {
+    // Remove dog
     dogs: state.dogs.filter((dog) => dog.id !== dogId),
+
+    // Remove all sessions belonging to that dog
     sessions: state.sessions.filter((session) => session.dogId !== dogId),
   };
 }
