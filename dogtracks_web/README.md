@@ -1,36 +1,41 @@
 # DogTracks Web Application
 
-DogTracks is a responsive browser application for dog owners, trainers, and shelters to track dog profiles and training observations. This starter uses semantic HTML, responsive CSS, vanilla JavaScript ES modules, and browser `localStorage`; it has no framework or runtime dependencies.
+DogTracks is a responsive browser application for dog owners, trainers, and
+shelters to track dog profiles and training observations. The current browser
+prototype saves profiles and training entries in `localStorage`. Data Connect
+configuration and a generated SDK are included, but the prototype does not yet
+read or write application data through Data Connect.
 
 ## Run locally
 
-1. Install a current Node.js LTS release (Node 20 or newer) and Git. Install Visual Studio Code if it is not already available.
-2. Open this `dogtracks_app` folder in VS Code.
-3. Install the **Live Server** VS Code extension, then right-click `index.html` and choose **Open with Live Server**. This serves JavaScript modules over HTTP at a local address such as `http://127.0.0.1:5500`.
-4. Use the app in a current browser. Sample profiles are loaded on first run; profiles and entries you add are saved in that browser on that device.
-5. Run the storage logic tests from this folder:
+1. Install Node.js 20 or newer and the Firebase CLI if you plan to use Firebase.
+2. Open `dogtracks_web` in VS Code.
+3. Install dependencies and run the storage tests:
 
    ```powershell
+   npm install
    npm test
    ```
 
-No `npm install` is required: the tests use Node's built-in test runner and the app uses no external packages. Do not open the page directly as a `file://` URL; ES modules and browser storage should be tested from a local web server.
+4. Serve `index.html` with a local web server such as Live Server. Do not open it
+   directly as a `file://` URL; the app uses JavaScript modules and browser
+   storage.
+
+Run Firebase CLI commands from this folder. `firebase.json`, `.firebaserc`, and
+the Data Connect configuration are all located here.
 
 ## Structure
 
 ```text
-dogtracks_app/
-├── index.html           # Semantic page shell, accessible forms, dialog
-├── styles.css           # Theme, responsive layout, component styles
+dogtracks_web/
+├── dataconnect/                  # Firebase Data Connect schema and connector
+├── index.html                    # Browser app shell
+├── package.json                  # Dependencies and test command
 ├── src/
-│   ├── app.js            # DOM rendering and user interactions
-│   └── storage.js        # Data model operations and localStorage boundary
-├── test/
-│   └── storage.test.js   # Node tests for profile/session storage logic
-├── package.json          # Node test command; no runtime dependencies
-└── README.md
+│   ├── app.js                    # UI rendering and interactions
+│   ├── storage.js                # Browser-local data operations
+│   └── dataconnect-generated/    # Generated Data Connect JavaScript SDK
+├── styles.css                    # Theme and responsive styles
+└── test/
+    └── storage.test.js           # Storage logic tests
 ```
-
-The browser prototype supports sample dog profiles, adding/deleting profiles, logging training entries with optional trigger and notes, profile history, and overview counts. Data is local to the browser; authentication, cross-device sync, Firebase, charts, goals, reminders, and image upload are not implemented.
-
-See [../AWaldsmith_AIMarkdown.md](../AWaldsmith_AIMarkdown.md) for the new-hire onboarding and development guide.

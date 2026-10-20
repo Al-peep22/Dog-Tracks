@@ -15,27 +15,26 @@ Technologies Used
 - Visual Studio Code — Primary development environment
 - Git + GitHub — Version control and collaboration
 
-Project Setup & Installation
-- To run the DogTracks web application, ensure the following tools and services are set up:
-- A Firebase project created in the Firebase Console
-- VS Code or any preferred code editor
-- Node.js installed (for Firebase tools or server‑side scripts)
-- Git installed for version control
+## Project setup
 
-Installation Steps
-1. Clone the repository
-bash
-git clone <your-repo-url>
-cd dogtracks_web
-2. Install dependencies (if using Node.js tools)
-bash
-npm install
-3. Connect Firebase
-Add your Firebase configuration to your project’s JavaScript initialization file
-Ensure Firestore, Authentication, and Hosting are enabled in the Firebase Console
-Use your team’s shared Firebase project credentials
-4. Run the application
-Since DogTracks is a web application, it can be run by:
-- Opening the project folder in VS Code
-- Using a local development server
-- Or deploying through Firebase Hosting when ready
+The web application and Firebase project configuration are in `dogtracks_web`.
+
+1. Clone the repository and enter the application folder:
+
+   ```powershell
+   git clone <your-repo-url>
+   cd <cloned-repository>\dogtracks_web
+   ```
+
+2. Install dependencies and run the storage tests:
+
+   ```powershell
+   npm install
+   npm test
+   ```
+
+3. Run Firebase CLI commands from `dogtracks_web`, where `firebase.json`,
+`.firebaserc`, and the Data Connect configuration are located.
+
+4. To run the browser application, open `dogtracks_web` in VS Code and serve
+   `index.html` with a local web server such as Live Server.
