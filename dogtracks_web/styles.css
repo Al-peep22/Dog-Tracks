@@ -5,6 +5,7 @@
   background: #f7f7f2;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  /* Custom color variables used throughout the app */
   --green: #315f4e;
   --green-dark: #254839;
   --green-pale: #e8f0eb;
@@ -15,10 +16,13 @@
   --shadow: 0 12px 36px rgba(38, 58, 47, .06);
 }
 
+/* Global Resets */
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; }
 button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
+
+/* Top Navigation Bar */
 .topbar { height: 76px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(20px, 5vw, 76px); background: rgba(255,255,255,.88); border-bottom: 1px solid var(--line); }
 .brand { display: inline-flex; align-items: center; gap: 11px; color: var(--green-dark); text-decoration: none; font-size: 20px; font-weight: 750; letter-spacing: -.04em; }
 .brand-mark { display: grid; place-items: center; width: 35px; height: 35px; border-radius: 12px; background: var(--green); color: white; font-family: Georgia, serif; font-size: 21px; }
@@ -32,17 +36,23 @@ button { cursor: pointer; }
 .button-primary span { padding-left: 8px; font-size: 18px; }
 .button-quiet { color: #526159; background: #f1f3ef; }
 .button-danger { color: #994545; background: #fbefed; }
+
+/* Page Layout */
 .page-shell { width: min(1180px, calc(100% - 48px)); margin: 42px auto 80px; }
 .welcome { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; }
 .eyebrow { margin: 0 0 10px; color: #819087; font-size: 10px; font-weight: 750; letter-spacing: .16em; }
 h1, h2, h3, p { margin-top: 0; }
 h1 { margin-bottom: 9px; color: #253930; font-family: Georgia, "Times New Roman", serif; font-size: clamp(34px, 5vw, 48px); font-weight: 500; letter-spacing: -.045em; }
 .welcome-copy { margin-bottom: 0; color: var(--muted); font-size: 14px; }
+
+/* Stats Section */
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 36px; }
 .stat-card { display: flex; align-items: center; gap: 15px; min-height: 91px; padding: 18px 21px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
 .stat-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: var(--green-pale); color: var(--green); font-size: 19px; }
 .stat-value { margin: 0 0 4px; color: #263a30; font-size: 22px; font-weight: 700; line-height: 1; }
 .stat-label { margin: 0; color: var(--muted); font-size: 11px; }
+
+/* Dog List Panel */
 .content-grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.4fr); gap: 20px; align-items: start; }
 .panel { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }
 .panel-heading { display: flex; align-items: center; justify-content: space-between; padding: 21px 23px 17px; }
@@ -61,6 +71,8 @@ h1 { margin-bottom: 9px; color: #253930; font-family: Georgia, "Times New Roman"
 .dog-meta { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
 .chevron { color: #99a49d; font-size: 19px; }
 .empty-state { padding: 30px 22px; color: var(--muted); text-align: center; font-size: 13px; line-height: 1.6; }
+
+/* Dog Detail Panel */
 .detail-panel { min-height: 400px; }
 .detail-top { display: flex; align-items: center; gap: 15px; padding: 22px 23px 18px; border-bottom: 1px solid #f0f1ed; }
 .detail-avatar { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 17px; background: var(--green-pale); color: var(--green); font-family: Georgia, serif; font-size: 22px; }
@@ -70,6 +82,8 @@ h1 { margin-bottom: 9px; color: #253930; font-family: Georgia, "Times New Roman"
 .icon-button { display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 9px; background: transparent; color: #718078; font-size: 21px; }
 .icon-button:hover { background: #f3f4f1; }
 .profile-notes { margin: 0 22px; padding: 13px 0; border-bottom: 1px solid #f0f1ed; color: #647169; font-size: 12px; line-height: 1.5; }
+
+/* Training Session Form */
 .session-form { display: grid; gap: 12px; padding: 20px 22px; border-bottom: 1px solid #f0f1ed; }
 .session-form h3, .history-heading { margin: 0; color: #314238; font-size: 12px; font-weight: 750; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -77,6 +91,8 @@ label { display: grid; gap: 6px; color: #637168; font-size: 10px; font-weight: 7
 input, textarea, select { width: 100%; min-height: 39px; border: 1px solid #e3e7e0; border-radius: 8px; outline: none; background: #fff; color: #293a31; padding: 9px 11px; font-size: 12px; font-weight: 400; }
 textarea { min-height: 66px; resize: vertical; }
 input:focus, textarea:focus, select:focus { border-color: #83a995; box-shadow: 0 0 0 3px rgba(91, 137, 111, .12); }
+
+/* Training History List */
 .session-form .button { justify-self: start; min-height: 38px; }
 .history { padding: 18px 22px 22px; }
 .history-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -87,16 +103,22 @@ input:focus, textarea:focus, select:focus { border-color: #83a995; box-shadow: 0
 .session-behavior { margin: 0 0 4px; color: #34443a; font-size: 11px; font-weight: 700; }
 .session-context { margin: 0; color: var(--muted); font-size: 10px; }
 .session-date { color: #849087; font-size: 9px; white-space: nowrap; }
+
+/* Dialog (Add Dog Popup) */
 .dialog { width: min(460px, calc(100% - 30px)); max-width: none; padding: 0; border: 0; border-radius: 16px; background: transparent; box-shadow: 0 24px 90px rgba(25, 39, 31, .23); }
 .dialog::backdrop { background: rgba(26, 38, 31, .38); backdrop-filter: blur(3px); }
 .dialog-card { display: grid; gap: 16px; padding: 25px; border-radius: 16px; background: white; }
 .dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2px; }
 .dialog-heading h2 { margin: 0; color: #263a30; font-family: Georgia, serif; font-size: 24px; font-weight: 500; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 5px; }
+
+/* Error Panel */
 .error-panel { max-width: 640px; margin: 50px auto; padding: 24px; border: 1px solid #edc3bc; border-radius: 14px; background: #fff6f4; color: #713b32; }
 .error-panel h1 { font-size: 27px; }
 .loading { color: var(--muted); }
 
+/* Responsive CSS rules - 
+change layout behavior when screen size changes */
 @media (max-width: 760px) {
   .topbar { height: 66px; padding: 0 18px; }
   .local-badge { display: none; }
