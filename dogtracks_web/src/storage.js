@@ -1,206 +1,151 @@
-// Key used to store data in the browser's localStorage
-export const STORAGE_KEY = 'dogtracks.state.v1';
-
 // -------------------------------------------------------------
-// Default starter data shown the first time the app loads
+// FIRESTORE STORAGE MODULE
 // -------------------------------------------------------------
-const starterState = {
-  dogs: [
-    {
-      id: 'dog-bailey',
-      name: 'Bailey',
-      breed: 'Labrador Retriever',
-      ageYears: 3,
-      notes: 'Enjoys learning new cues.',
-    },
-    {
-      id: 'dog-milo',
-      name: 'Milo',
-      breed: 'Mixed breed',
-      ageYears: 2,
-      notes: 'Practicing calm greetings.',
-    },
-  ],
-  sessions: [
-    {
-      id: 'session-bailey-1',
-      dogId: 'dog-bailey',
-      behavior: 'Loose-leash walking',
-      trigger: '',
-      notes: 'Practiced around the neighborhood.',
-      occurredAt: '2026-10-06T16:30:00.000Z',
-    },
-    {
-      id: 'session-milo-1',
-      dogId: 'dog-milo',
-      behavior: 'Calm greeting',
-      trigger: 'Visitor at the door',
-      notes: 'Settled after a short pause.',
-      occurredAt: '2026-10-05T17:10:00.000Z',
-    },
-  ],
-};
+// Import modular Firestore functions using browser-ready official CDN to avoid local resolution issues.
+import { 
+  collection, 
+  doc, 
+  addDoc, 
+  deleteDoc, 
+  getDocs, 
+  query, 
+  where, 
+  Timestamp 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// -------------------------------------------------------------
-// Validate the entire state object to ensure nothing is corrupted
-// -------------------------------------------------------------
-function assertState(state) {
-  // Basic shape check
-  if (!state || !Array.isArray(state.dogs) || !Array.isArray(state.sessions)) {
-    throw new Error('DogTracks data is invalid. Clear this site\'s saved data or contact the project team.');
-  }
+// Helper function to safely calculate whole years elapsed from a Date or Timestamp.
+export function calculateAgeYears(birthDate) {
+  // Guard against null, undefined, or missing birth dates.
+  if (!birthDate) return 0;
 
-  // Validate dog profiles
-  const dogIds = new Set();
-  for (const dog of state.dogs) {
-    if (
-      !dog ||
-      typeof dog.id !== 'string' ||
-      typeof dog.name !== 'string' ||
-      !dog.name.trim() || // name must not be empty
-      typeof dog.breed !== 'string' ||
-      typeof dog.notes !== 'string' ||
-      !Number.isInteger(dog.ageYears) ||
-      dog.ageYears < 0 ||
-      dog.ageYears > 40 ||
-      dogIds.has(dog.id) // duplicate dog ID
-    ) {
-      throw new Error('DogTracks dog profile data is invalid. Clear this site\'s saved data or contact the project team.');
-    }
-    dogIds.add(dog.id);
-  }
+  // Convert input into a native JS Date object whether it's a Firestore Timestamp or date string.
+  const dob = birthDate?.toDate ? birthDate.toDate() : new Date(birthDate);
 
-  // Validate training sessions
-  const sessionIds = new Set();
-  for (const session of state.sessions) {
-    if (
-      !session ||
-      typeof session.id !== 'string' ||
-      sessionIds.has(session.id) || // duplicate session ID
-      !dogIds.has(session.dogId) || // session must belong to a real dog
-      typeof session.behavior !== 'string' ||
-      !session.behavior.trim() ||
-      typeof session.trigger !== 'string' ||
-      typeof session.notes !== 'string' ||
-      typeof session.occurredAt !== 'string' ||
-      Number.isNaN(Date.parse(session.occurredAt)) // must be valid date
-    ) {
-      throw new Error('DogTracks training history is invalid. Clear this site\'s saved data or contact the project team.');
-    }
-    sessionIds.add(session.id);
-  }
+  // If the parsed date is invalid, safely fall back to 0.
+  if (Number.isNaN(dob.getTime())) return 0;
+
+  // Calculate difference in milliseconds between today and the birth date.
+  const diffMs = Date.now() - dob.getTime();
+
+  // Convert difference into a rough age by measuring years since the Unix epoch (1970).
+  const ageDate = new Date(diffMs);
+
+  // Return non-negative integer years.
+  return Math.max(0, Math.abs(ageDate.getUTCFullYear() - 1970));
+}
+
+// Helper function to safely extract the string ID from a document reference or string.
+export function extractId(refOrId) {
+  // Guard against missing values.
+  if (!refOrId) return '';
+  // If it's already a string, return it directly.
+  if (typeof refOrId === 'string') return refOrId;
+  // If it's a Firestore DocumentReference object, return its .id property.
+  if (refOrId.id) return refOrId.id;
+  // Fall back to string coercion.
+  return String(refOrId);
 }
 
 // -------------------------------------------------------------
-// Load saved state from localStorage
+// DOG PROFILE CRUD
 // -------------------------------------------------------------
-export function loadState(storage = globalThis.localStorage) {
-  if (!storage) throw new Error('Browser storage is unavailable. Open DogTracks in a current browser.');
-
-  const saved = storage.getItem(STORAGE_KEY);
-
-  // If no saved data exists, use starterState
-  if (saved === null) {
-    const initialState = structuredClone(starterState);
-    saveState(initialState, storage);
-    return initialState;
-  }
-
-  // Try to parse saved JSON
-  let state;
-  try {
-    state = JSON.parse(saved);
-  } catch (error) {
-    throw new Error('Could not read saved DogTracks data. Clear this site\'s saved data to start fresh.', { cause: error });
-  }
-
-  // Validate the loaded state
-  assertState(state);
-  return state;
-}
-
-// -------------------------------------------------------------
-// Save state to localStorage
-// -------------------------------------------------------------
-export function saveState(state, storage = globalThis.localStorage) {
-  if (!storage) throw new Error('Browser storage is unavailable. Open DogTracks in a current browser.');
-  assertState(state); // ensure data is valid before saving
-  storage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-// -------------------------------------------------------------
-// Create a new dog profile
-// -------------------------------------------------------------
-export function createDog(state, input, id = globalThis.crypto.randomUUID()) {
-  const name = input.name.trim();
+// Create a new dog record conforming to the strict schema.
+export async function createDog(db, input, ownerId = null) {
+  // Validate and trim the dog's name (required field).
+  const name = String(input?.Name ?? input?.name ?? '').trim();
   if (!name) throw new Error('Enter a name for the dog.');
 
-  const ageYears = Number(input.ageYears);
-  if (!Number.isInteger(ageYears) || ageYears < 0 || ageYears > 40) {
-    throw new Error('Enter an age from 0 to 40 whole years.');
+  // Initialize birth date placeholder.
+  let dobDate = new Date();
+
+  // Check if a specific DateOfBirth was submitted.
+  if (input?.DateOfBirth) {
+    dobDate = new Date(input.DateOfBirth);
+  // Fallback: estimate DateOfBirth from ageYears if provided by form.
+  } else if (input?.ageYears !== undefined && input?.ageYears !== '') {
+    const years = Math.max(0, Math.min(40, Number(input.ageYears) || 0));
+    dobDate.setFullYear(dobDate.getFullYear() - years);
   }
 
-  // Build the new dog object
-  const dog = {
-    id,
-    name,
-    breed: input.breed.trim(),
-    ageYears,
-    notes: input.notes.trim(),
+  // Ensure dobDate is valid; fallback to current time if conversion broke.
+  if (Number.isNaN(dobDate.getTime())) {
+    dobDate = new Date();
+  }
+
+  // Wrap the JS date in a Firestore Timestamp object.
+  const dateOfBirthTimestamp = Timestamp.fromDate(dobDate);
+
+  // Create DocumentReference for the Owner if provided, otherwise null.
+  const ownerRef = ownerId ? doc(db, "Users", ownerId) : null;
+
+  // Construct document payload strictly adhering to schema casing and types.
+  const dogPayload = {
+    Name: name,
+    Breed: String(input?.Breed ?? input?.breed ?? '').trim(),
+    DateOfBirth: dateOfBirthTimestamp,
+    Notes: String(input?.Notes ?? input?.notes ?? '').trim(),
+    OwnerId: ownerRef,
   };
 
-  // Add dog to state
-  const nextState = { ...state, dogs: [...state.dogs, dog] };
-  assertState(nextState);
-  return nextState;
+  // Persist record to the 'Dogs' collection and return reference.
+  return await addDoc(collection(db, "Dogs"), dogPayload);
+}
+
+// Delete a dog and cascade-delete all training sessions linked to it.
+export async function deleteDog(db, dogId) {
+  // Ensure an ID is present.
+  if (!dogId) throw new Error('Missing dog ID for deletion.');
+
+  // Create DocumentReference for the target dog.
+  const dogRef = doc(db, "Dogs", dogId);
+
+  // Build query to find all sessions where DogId points to this document.
+  const sessionsQuery = query(collection(db, "Sessions"), where("DogId", "==", dogRef));
+
+  // Fetch the matching session records.
+  const sessionDocs = await getDocs(sessionsQuery);
+
+  // Prepare parallel deletion promises for all related sessions.
+  const deleteSessionPromises = sessionDocs.docs.map((sDoc) => deleteDoc(doc(db, "Sessions", sDoc.id)));
+
+  // Await completion of all session deletions.
+  await Promise.all(deleteSessionPromises);
+
+  // Finally, delete the parent dog document.
+  await deleteDoc(dogRef);
 }
 
 // -------------------------------------------------------------
-// Create a new training session
+// SESSION CRUD
 // -------------------------------------------------------------
-export function createSession(
-  state,
-  input,
-  occurredAt = new Date().toISOString(), // default timestamp
-  id = globalThis.crypto.randomUUID()
-) {
-  // Ensure dog exists
-  if (!state.dogs.some((dog) => dog.id === input.dogId)) {
-    throw new Error('Choose a dog before logging a training entry.');
-  }
+// Add a training session linked to a dog via DocumentReference.
+export async function createSession(db, input) {
+  // Extract dog document ID.
+  const rawDogId = input?.DogId ?? input?.dogId;
+  const dogId = extractId(rawDogId);
+  if (!dogId) throw new Error('Choose a dog before logging a training entry.');
 
-  const behavior = input.behavior.trim();
+  // Validate behavior text.
+  const behavior = String(input?.Behavior ?? input?.behavior ?? '').trim();
   if (!behavior) throw new Error('Enter a behavior or training activity.');
 
-  // Build session object
-  const session = {
-    id,
-    dogId: input.dogId,
-    behavior,
-    trigger: input.trigger.trim(),
-    notes: input.notes.trim(),
-    occurredAt,
+  // Create DocumentReference for the target dog.
+  const dogRef = doc(db, "Dogs", dogId);
+
+  // Resolve session occurrence time.
+  const rawDate = input?.OccurredAt ?? input?.occurredAt;
+  const occurredDate = rawDate ? new Date(rawDate) : new Date();
+  const validDate = Number.isNaN(occurredDate.getTime()) ? new Date() : occurredDate;
+
+  // Assemble payload matching schema.
+  const sessionPayload = {
+    Behavior: behavior,
+    DogId: dogRef,
+    Trigger: String(input?.Trigger ?? input?.trigger ?? '').trim(),
+    Notes: String(input?.Notes ?? input?.notes ?? '').trim(),
+    OccurredAt: Timestamp.fromDate(validDate),
   };
 
-  // Add session to state
-  const nextState = { ...state, sessions: [...state.sessions, session] };
-  assertState(nextState);
-  return nextState;
-}
-
-// -------------------------------------------------------------
-// Delete a dog and all its sessions
-// -------------------------------------------------------------
-export function deleteDog(state, dogId) {
-  if (!state.dogs.some((dog) => dog.id === dogId)) {
-    throw new Error('That dog profile no longer exists.');
-  }
-
-  return {
-    // Remove dog
-    dogs: state.dogs.filter((dog) => dog.id !== dogId),
-
-    // Remove all sessions belonging to that dog
-    sessions: state.sessions.filter((session) => session.dogId !== dogId),
-  };
+  // Add document to the 'Sessions' collection.
+  return await addDoc(collection(db, "Sessions"), sessionPayload);
 }

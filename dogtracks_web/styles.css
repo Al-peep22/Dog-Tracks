@@ -1,140 +1,1136 @@
+/* ------------------------------------------------------------- */
+/* ROOT DESIGN TOKENS & COLOR PALETTE                            */
+/* ------------------------------------------------------------- */
 :root {
+  /* Enforce light color scheme rendering */
   color-scheme: light;
+  /* System typographic stack */
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Dark readable base text */
   color: #23342e;
+  /* Warm off-white canvas background */
   background: #f7f7f2;
+  /* Prevent synthetic slant or bolding */
   font-synthesis: none;
+  /* Optimize font rendering legibility */
   text-rendering: optimizeLegibility;
-  /* Custom color variables used throughout the app */
+  /* Primary brand green accent */
   --green: #315f4e;
+  /* Darker forest green for hover states */
   --green-dark: #254839;
+  /* Pale green background for badges and avatars */
   --green-pale: #e8f0eb;
+  /* Muted neutral tone for secondary text */
   --muted: #728078;
+  /* Border divider line color */
   --line: #e8eae4;
+  /* White card surface background */
   --surface: #fff;
+  /* Amber accent tone */
   --amber: #b77a34;
+  /* Soft layered box shadow */
   --shadow: 0 12px 36px rgba(38, 58, 47, .06);
 }
 
-/* Global Resets */
-* { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; }
-button, input, textarea, select { font: inherit; }
-button { cursor: pointer; }
-
-/* Top Navigation Bar */
-.topbar { height: 76px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(20px, 5vw, 76px); background: rgba(255,255,255,.88); border-bottom: 1px solid var(--line); }
-.brand { display: inline-flex; align-items: center; gap: 11px; color: var(--green-dark); text-decoration: none; font-size: 20px; font-weight: 750; letter-spacing: -.04em; }
-.brand-mark { display: grid; place-items: center; width: 35px; height: 35px; border-radius: 12px; background: var(--green); color: white; font-family: Georgia, serif; font-size: 21px; }
-.topbar-actions { display: flex; align-items: center; gap: 22px; }
-.local-badge { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
-.local-badge span { width: 7px; height: 7px; border-radius: 50%; background: #66a982; }
-.button { min-height: 42px; border: 0; border-radius: 10px; padding: 0 16px; font-size: 13px; font-weight: 650; transition: transform .15s ease, background .15s ease; }
-.button:hover { transform: translateY(-1px); }
-.button-primary { background: var(--green); color: white; }
-.button-primary:hover { background: var(--green-dark); }
-.button-primary span { padding-left: 8px; font-size: 18px; }
-.button-quiet { color: #526159; background: #f1f3ef; }
-.button-danger { color: #994545; background: #fbefed; }
-
-/* Page Layout */
-.page-shell { width: min(1180px, calc(100% - 48px)); margin: 42px auto 80px; }
-.welcome { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; }
-.eyebrow { margin: 0 0 10px; color: #819087; font-size: 10px; font-weight: 750; letter-spacing: .16em; }
-h1, h2, h3, p { margin-top: 0; }
-h1 { margin-bottom: 9px; color: #253930; font-family: Georgia, "Times New Roman", serif; font-size: clamp(34px, 5vw, 48px); font-weight: 500; letter-spacing: -.045em; }
-.welcome-copy { margin-bottom: 0; color: var(--muted); font-size: 14px; }
-
-/* Stats Section */
-.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 36px; }
-.stat-card { display: flex; align-items: center; gap: 15px; min-height: 91px; padding: 18px 21px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
-.stat-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: var(--green-pale); color: var(--green); font-size: 19px; }
-.stat-value { margin: 0 0 4px; color: #263a30; font-size: 22px; font-weight: 700; line-height: 1; }
-.stat-label { margin: 0; color: var(--muted); font-size: 11px; }
-
-/* Dog List Panel */
-.content-grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.4fr); gap: 20px; align-items: start; }
-.panel { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }
-.panel-heading { display: flex; align-items: center; justify-content: space-between; padding: 21px 23px 17px; }
-.panel-heading h2 { margin: 0; color: #263a30; font-size: 15px; }
-.panel-heading p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
-.count-badge { display: grid; place-items: center; min-width: 27px; height: 27px; border-radius: 9px; background: var(--green-pale); color: var(--green); font-size: 12px; font-weight: 700; }
-.dog-list { display: grid; gap: 9px; padding: 0 13px 15px; }
-.dog-item { display: flex; align-items: center; width: 100%; gap: 12px; padding: 12px; border: 1px solid transparent; border-radius: 12px; background: white; text-align: left; color: inherit; }
-.dog-item:hover { background: #fafbf8; }
-.dog-item[aria-pressed="true"] { border-color: #b8d2c1; background: #f3f8f4; }
-.dog-avatar { flex: 0 0 auto; display: grid; place-items: center; width: 43px; height: 43px; border-radius: 14px; background: #ede9df; color: #725e43; font-family: Georgia, serif; font-size: 18px; }
-.dog-item:nth-child(3n + 2) .dog-avatar { background: #e7edf2; color: #587080; }
-.dog-item:nth-child(3n) .dog-avatar { background: #f4e9e0; color: #94684c; }
-.dog-summary { flex: 1; min-width: 0; }
-.dog-name { display: block; overflow: hidden; color: #2c3b33; font-size: 13px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.dog-meta { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
-.chevron { color: #99a49d; font-size: 19px; }
-.empty-state { padding: 30px 22px; color: var(--muted); text-align: center; font-size: 13px; line-height: 1.6; }
-
-/* Dog Detail Panel */
-.detail-panel { min-height: 400px; }
-.detail-top { display: flex; align-items: center; gap: 15px; padding: 22px 23px 18px; border-bottom: 1px solid #f0f1ed; }
-.detail-avatar { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 17px; background: var(--green-pale); color: var(--green); font-family: Georgia, serif; font-size: 22px; }
-.detail-title { flex: 1; min-width: 0; }
-.detail-title h2 { overflow: hidden; margin: 0 0 5px; color: #253930; font-family: Georgia, serif; font-size: 22px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.detail-title p { margin: 0; color: var(--muted); font-size: 11px; }
-.icon-button { display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 9px; background: transparent; color: #718078; font-size: 21px; }
-.icon-button:hover { background: #f3f4f1; }
-.profile-notes { margin: 0 22px; padding: 13px 0; border-bottom: 1px solid #f0f1ed; color: #647169; font-size: 12px; line-height: 1.5; }
-
-/* Training Session Form */
-.session-form { display: grid; gap: 12px; padding: 20px 22px; border-bottom: 1px solid #f0f1ed; }
-.session-form h3, .history-heading { margin: 0; color: #314238; font-size: 12px; font-weight: 750; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-label { display: grid; gap: 6px; color: #637168; font-size: 10px; font-weight: 700; }
-input, textarea, select { width: 100%; min-height: 39px; border: 1px solid #e3e7e0; border-radius: 8px; outline: none; background: #fff; color: #293a31; padding: 9px 11px; font-size: 12px; font-weight: 400; }
-textarea { min-height: 66px; resize: vertical; }
-input:focus, textarea:focus, select:focus { border-color: #83a995; box-shadow: 0 0 0 3px rgba(91, 137, 111, .12); }
-
-/* Training History List */
-.session-form .button { justify-self: start; min-height: 38px; }
-.history { padding: 18px 22px 22px; }
-.history-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.history-heading span { color: #8c9890; font-size: 10px; font-weight: 500; }
-.session-list { display: grid; gap: 9px; }
-.session-item { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 10px; border-radius: 10px; background: #fafbf8; }
-.session-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: #eef1e7; color: #71814f; }
-.session-behavior { margin: 0 0 4px; color: #34443a; font-size: 11px; font-weight: 700; }
-.session-context { margin: 0; color: var(--muted); font-size: 10px; }
-.session-date { color: #849087; font-size: 9px; white-space: nowrap; }
-
-/* Dialog (Add Dog Popup) */
-.dialog { width: min(460px, calc(100% - 30px)); max-width: none; padding: 0; border: 0; border-radius: 16px; background: transparent; box-shadow: 0 24px 90px rgba(25, 39, 31, .23); }
-.dialog::backdrop { background: rgba(26, 38, 31, .38); backdrop-filter: blur(3px); }
-.dialog-card { display: grid; gap: 16px; padding: 25px; border-radius: 16px; background: white; }
-.dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2px; }
-.dialog-heading h2 { margin: 0; color: #263a30; font-family: Georgia, serif; font-size: 24px; font-weight: 500; }
-.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 5px; }
-
-/* Error Panel */
-.error-panel { max-width: 640px; margin: 50px auto; padding: 24px; border: 1px solid #edc3bc; border-radius: 14px; background: #fff6f4; color: #713b32; }
-.error-panel h1 { font-size: 27px; }
-.loading { color: var(--muted); }
-
-/* Responsive CSS rules - 
-change layout behavior when screen size changes */
-@media (max-width: 760px) {
-  .topbar { height: 66px; padding: 0 18px; }
-  .local-badge { display: none; }
-  .page-shell { width: min(100% - 30px, 560px); margin-top: 30px; }
-  .welcome { display: block; }
-  .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-  .stat-card { display: block; min-height: 95px; padding: 12px; }
-  .stat-icon { width: 30px; height: 30px; margin-bottom: 8px; border-radius: 9px; font-size: 14px; }
-  .stat-value { font-size: 19px; }
-  .stat-label { font-size: 9px; }
-  .content-grid { grid-template-columns: 1fr; gap: 15px; }
+/* ------------------------------------------------------------- */
+/* GLOBAL RESETS & BOX SIZING                                    */
+/* ------------------------------------------------------------- */
+/* Standard box-sizing normalization */
+*, *::before, *::after {
+  /* Include padding and border in width calculations */
+  box-sizing: border-box;
 }
 
+/* Base body reset */
+body {
+  /* Remove perimeter margin */
+  margin: 0;
+  /* Prevent mobile squeeze bugs */
+  min-width: 320px;
+}
+
+/* Inherit typography on form controls */
+button, input, textarea, select {
+  /* Inherit root font */
+  font: inherit;
+}
+
+/* Add pointer cursor to clickable buttons */
+button {
+  /* Interactive hand cursor */
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------- */
+/* TOP NAVIGATION BAR                                            */
+/* ------------------------------------------------------------- */
+/* Top fixed-height navbar */
+.app-header, .topbar {
+  /* Fixed height */
+  height: 76px;
+  /* Flex container */
+  display: flex;
+  /* Vertically center items */
+  align-items: center;
+  /* Space out brand and buttons */
+  justify-content: space-between;
+  /* Responsive horizontal side padding */
+  padding: 0 clamp(20px, 5vw, 76px);
+  /* Translucent frosted white background */
+  background: rgba(255, 255, 255, .88);
+  /* Bottom dividing border */
+  border-bottom: 1px solid var(--line);
+}
+
+/* Brand wrapper title */
+.brand {
+  /* Inline flex alignment */
+  display: inline-flex;
+  /* Center items */
+  align-items: center;
+  /* Gap between logo and text */
+  gap: 11px;
+  /* Dark green tone */
+  color: var(--green-dark);
+  /* Remove underline */
+  text-decoration: none;
+  /* Prominent font size */
+  font-size: 20px;
+  /* Semi-bold weight */
+  font-weight: 750;
+  /* Tight letter spacing */
+  letter-spacing: -.04em;
+}
+
+/* Monogram brand icon badge */
+.brand-mark {
+  /* Center letter inside badge */
+  display: grid;
+  /* Alignment shorthand */
+  place-items: center;
+  /* Badge width */
+  width: 35px;
+  /* Badge height */
+  height: 35px;
+  /* Rounded corners */
+  border-radius: 12px;
+  /* Brand green background */
+  background: var(--green);
+  /* White letter color */
+  color: white;
+  /* Classic editorial serif */
+  font-family: Georgia, serif;
+  /* Letter size */
+  font-size: 21px;
+}
+
+/* Topbar actions wrapper */
+.topbar-actions {
+  /* Flex alignment */
+  display: flex;
+  /* Align items */
+  align-items: center;
+  /* Horizontal gap */
+  gap: 12px;
+}
+
+/* ------------------------------------------------------------- */
+/* BUTTON BASE STYLES                                            */
+/* ------------------------------------------------------------- */
+/* Standard interactive button baseline */
+.button {
+  /* Comfortable minimum height */
+  min-height: 42px;
+  /* Remove border */
+  border: 0;
+  /* Rounded corners */
+  border-radius: 10px;
+  /* Side padding */
+  padding: 0 16px;
+  /* Font size */
+  font-size: 13px;
+  /* Semi-bold weight */
+  font-weight: 650;
+  /* Smooth transition on hover */
+  transition: transform .15s ease, background .15s ease;
+}
+
+/* Button hover elevation */
+.button:hover {
+  /* Slight upward translation */
+  transform: translateY(-1px);
+}
+
+/* Primary brand button */
+.button-primary {
+  /* Brand green background */
+  background: var(--green);
+  /* White text */
+  color: white;
+}
+
+/* Primary button hover */
+.button-primary:hover {
+  /* Darkened brand green */
+  background: var(--green-dark);
+}
+
+/* Secondary button */
+.button-secondary, .button-quiet {
+  /* Dark slate text */
+  color: #526159;
+  /* Subtle gray-green background */
+  background: #f1f3ef;
+}
+
+/* Secondary button hover */
+.button-secondary:hover, .button-quiet:hover {
+  /* Darker neutral background */
+  background: #e5e8e2;
+}
+
+/* ------------------------------------------------------------- */
+/* PAGE LAYOUT SHELL                                             */
+/* ------------------------------------------------------------- */
+/* Centered dashboard shell */
+main, .page-shell {
+  /* Max width container with responsive boundaries */
+  width: min(1180px, calc(100% - 48px));
+  /* Center horizontally with vertical spacing */
+  margin: 42px auto 80px;
+}
+
+/* Welcome headline row */
+.welcome {
+  /* Flex container */
+  display: flex;
+  /* Bottom-align text */
+  align-items: flex-end;
+  /* Space out items */
+  justify-content: space-between;
+  /* Bottom margin */
+  margin-bottom: 28px;
+}
+
+/* Eyebrow small uppercase heading */
+.eyebrow {
+  /* Margin below eyebrow */
+  margin: 0 0 10px;
+  /* Muted sage color */
+  color: #819087;
+  /* Small uppercase size */
+  font-size: 10px;
+  /* Bold font weight */
+  font-weight: 750;
+  /* Wide tracking */
+  letter-spacing: .16em;
+}
+
+/* Remove default top margins */
+h1, h2, h3, p {
+  /* Reset top margin */
+  margin-top: 0;
+}
+
+/* Editorial headline */
+h1 {
+  /* Bottom spacing */
+  margin-bottom: 9px;
+  /* Dark green headline tone */
+  color: #253930;
+  /* Serif typeface */
+  font-family: Georgia, "Times New Roman", serif;
+  /* Responsive headline size */
+  font-size: clamp(34px, 5vw, 48px);
+  /* Medium weight */
+  font-weight: 500;
+  /* Tight tracking */
+  letter-spacing: -.045em;
+}
+
+/* Subtitle copy */
+.welcome-copy {
+  /* Remove margin */
+  margin-bottom: 0;
+  /* Muted color */
+  color: var(--muted);
+  /* Reading font size */
+  font-size: 14px;
+}
+
+/* ------------------------------------------------------------- */
+/* STATS SUMMARY SECTION                                         */
+/* ------------------------------------------------------------- */
+/* Three-column card grid */
+.stats {
+  /* Grid display */
+  display: grid;
+  /* Three equal columns */
+  grid-template-columns: repeat(3, 1fr);
+  /* Gap between cards */
+  gap: 15px;
+  /* Bottom margin */
+  margin-bottom: 36px;
+}
+
+/* Individual metric card */
+.stat-card {
+  /* Flex row alignment */
+  display: flex;
+  /* Center items vertically */
+  align-items: center;
+  /* Gap between icon and text */
+  gap: 15px;
+  /* Minimum height */
+  min-height: 91px;
+  /* Inner padding */
+  padding: 18px 21px;
+  /* Border line */
+  border: 1px solid var(--line);
+  /* Rounded corners */
+  border-radius: 14px;
+  /* White surface background */
+  background: var(--surface);
+}
+
+/* Icon badge wrapper */
+.stat-icon {
+  /* Center glyph */
+  display: grid;
+  /* Centering shorthand */
+  place-items: center;
+  /* Badge width */
+  width: 42px;
+  /* Badge height */
+  height: 42px;
+  /* Rounded corners */
+  border-radius: 13px;
+  /* Pale brand green fill */
+  background: var(--green-pale);
+  /* Brand green icon tone */
+  color: var(--green);
+  /* Icon font size */
+  font-size: 19px;
+}
+
+/* Metric number */
+.stat-value {
+  /* Bottom margin */
+  margin: 0 0 4px;
+  /* Dark forest green tone */
+  color: #263a30;
+  /* Prominent bold size */
+  font-size: 22px;
+  /* Bold weight */
+  font-weight: 700;
+  /* Tight line height */
+  line-height: 1;
+}
+
+/* Metric label */
+.stat-label {
+  /* Remove margin */
+  margin: 0;
+  /* Muted label color */
+  color: var(--muted);
+  /* Small scannable font size */
+  font-size: 11px;
+}
+
+/* ------------------------------------------------------------- */
+/* TWO-COLUMN DASHBOARD GRID LAYOUT                              */
+/* ------------------------------------------------------------- */
+/* Two-column dashboard split */
+.content-grid {
+  /* Grid container */
+  display: grid;
+  /* Asymmetric columns */
+  grid-template-columns: minmax(0, .95fr) minmax(0, 1.4fr);
+  /* Gap between columns */
+  gap: 20px;
+  /* Top-align panels */
+  align-items: start;
+}
+
+/* Reusable card panel */
+.panel {
+  /* Prevent content overflow */
+  overflow: hidden;
+  /* Card border */
+  border: 1px solid var(--line);
+  /* Rounded card corners */
+  border-radius: 16px;
+  /* White background */
+  background: var(--surface);
+  /* Soft depth shadow */
+  box-shadow: var(--shadow);
+}
+
+/* Panel header banner */
+.panel-heading {
+  /* Flex alignment */
+  display: flex;
+  /* Align items to center */
+  align-items: center;
+  /* Push badge to opposite edge */
+  justify-content: space-between;
+  /* Internal header padding */
+  padding: 21px 23px 17px;
+}
+
+/* Panel heading title */
+.panel-heading h2 {
+  /* Remove margin */
+  margin: 0;
+  /* Dark green text */
+  color: #263a30;
+  /* Font size */
+  font-size: 15px;
+}
+
+/* Panel heading subtitle */
+.panel-heading p {
+  /* Spacing above */
+  margin: 5px 0 0;
+  /* Muted color */
+  color: var(--muted);
+  /* Small font size */
+  font-size: 11px;
+}
+
+/* Round pill badge for item counts */
+.count-badge {
+  /* Center digit */
+  display: grid;
+  /* Alignment shorthand */
+  place-items: center;
+  /* Minimum pill width */
+  min-width: 27px;
+  /* Height */
+  height: 27px;
+  /* Rounded badge corners */
+  border-radius: 9px;
+  /* Pale green background */
+  background: var(--green-pale);
+  /* Green text */
+  color: var(--green);
+  /* Font size */
+  font-size: 12px;
+  /* Bold weight */
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------- */
+/* DOG SELECTOR LIST (LEFT PANEL)                                */
+/* ------------------------------------------------------------- */
+/* List container for dogs */
+.dog-list {
+  /* Stack grid display */
+  display: grid;
+  /* Gap between rows */
+  gap: 9px;
+  /* Inner padding */
+  padding: 0 13px 15px;
+}
+
+/* Clickable dog profile button */
+.dog-item {
+  /* Flex layout */
+  display: flex;
+  /* Center items */
+  align-items: center;
+  /* Full width */
+  width: 100%;
+  /* Gap between avatar, text, and chevron */
+  gap: 12px;
+  /* Padding */
+  padding: 12px;
+  /* Transparent border by default */
+  border: 1px solid transparent;
+  /* Rounded corners */
+  border-radius: 12px;
+  /* White card background */
+  background: white;
+  /* Align text to left */
+  text-align: left;
+  /* Inherit text color */
+  color: inherit;
+}
+
+/* Hover effect on dog button */
+.dog-item:hover {
+  /* Subtle tint */
+  background: #fafbf8;
+}
+
+/* Active selected state for dog button */
+.dog-item[aria-pressed="true"] {
+  /* Green border indicating selection */
+  border-color: #b8d2c1;
+  /* Pale green background */
+  background: #f3f8f4;
+}
+
+/* Avatar initial badge */
+.dog-avatar {
+  /* Do not compress */
+  flex: 0 0 auto;
+  /* Center initial */
+  display: grid;
+  /* Alignment shorthand */
+  place-items: center;
+  /* Avatar width */
+  width: 43px;
+  /* Avatar height */
+  height: 43px;
+  /* Rounded corners */
+  border-radius: 14px;
+  /* Taupe background */
+  background: #ede9df;
+  /* Brown initial text */
+  color: #725e43;
+  /* Serif typeface */
+  font-family: Georgia, serif;
+  /* Font size */
+  font-size: 18px;
+}
+
+/* Alternating color theme: Cool blue avatar */
+.dog-item:nth-child(3n + 2) .dog-avatar {
+  /* Cool blue background */
+  background: #e7edf2;
+  /* Slate blue initial */
+  color: #587080;
+}
+
+/* Alternating color theme: Warm terracotta avatar */
+.dog-item:nth-child(3n) .dog-avatar {
+  /* Terracotta background */
+  background: #f4e9e0;
+  /* Terracotta initial */
+  color: #94684c;
+}
+
+/* Middle text wrapper */
+.dog-summary {
+  /* Expand to fill row space */
+  flex: 1;
+  /* Allow text to truncate */
+  min-width: 0;
+}
+
+/* Dog name */
+.dog-name {
+  /* Block display */
+  display: block;
+  /* Hide overflow */
+  overflow: hidden;
+  /* Dark text */
+  color: #2c3b33;
+  /* Font size */
+  font-size: 13px;
+  /* Bold weight */
+  font-weight: 700;
+  /* Truncation ellipsis */
+  text-overflow: ellipsis;
+  /* Single line layout */
+  white-space: nowrap;
+}
+
+/* Dog breed and age metadata */
+.dog-meta {
+  /* Block display */
+  display: block;
+  /* Top spacing */
+  margin-top: 4px;
+  /* Muted text color */
+  color: var(--muted);
+  /* Small metadata font size */
+  font-size: 10px;
+}
+
+/* Trailing arrow glyph */
+.chevron {
+  /* Gray chevron tone */
+  color: #99a49d;
+  /* Font size */
+  font-size: 19px;
+}
+
+/* Empty state message */
+.empty-state {
+  /* Padding */
+  padding: 30px 22px;
+  /* Muted tone */
+  color: var(--muted);
+  /* Center alignment */
+  text-align: center;
+  /* Font size */
+  font-size: 13px;
+  /* Line height */
+  line-height: 1.6;
+}
+
+/* ------------------------------------------------------------- */
+/* DOG DETAIL PANEL (RIGHT PANEL)                                */
+/* ------------------------------------------------------------- */
+/* Detail training journal card */
+.detail-panel {
+  /* Minimum height */
+  min-height: 400px;
+}
+
+/* Profile header inside detail card */
+.detail-top {
+  /* Flex alignment */
+  display: flex;
+  /* Center items */
+  align-items: center;
+  /* Gap */
+  gap: 15px;
+  /* Padding */
+  padding: 22px 23px 18px;
+  /* Bottom border divider */
+  border-bottom: 1px solid #f0f1ed;
+}
+
+/* Large avatar badge */
+.detail-avatar {
+  /* Center letter */
+  display: grid;
+  /* Alignment shorthand */
+  place-items: center;
+  /* Width */
+  width: 54px;
+  /* Height */
+  height: 54px;
+  /* Rounded corners */
+  border-radius: 17px;
+  /* Pale brand green fill */
+  background: var(--green-pale);
+  /* Brand green letter */
+  color: var(--green);
+  /* Serif typeface */
+  font-family: Georgia, serif;
+  /* Font size */
+  font-size: 22px;
+}
+
+/* Detail title container */
+.detail-title {
+  /* Expand to fill row space */
+  flex: 1;
+  /* Truncation boundary */
+  min-width: 0;
+}
+
+/* Detail dog heading */
+.detail-title h2 {
+  /* Overflow hidden */
+  overflow: hidden;
+  /* Margin */
+  margin: 0 0 5px;
+  /* Dark text */
+  color: #253930;
+  /* Serif typeface */
+  font-family: Georgia, serif;
+  /* Heading font size */
+  font-size: 22px;
+  /* Medium weight */
+  font-weight: 500;
+  /* Truncation ellipsis */
+  text-overflow: ellipsis;
+  /* Prevent wrapping */
+  white-space: nowrap;
+}
+
+/* Detail subtitle */
+.detail-title p {
+  /* Remove margin */
+  margin: 0;
+  /* Muted tone */
+  color: var(--muted);
+  /* Small font size */
+  font-size: 11px;
+}
+
+/* Small square icon button (Delete Dog) */
+.icon-button {
+  /* Center glyph */
+  display: grid;
+  /* Alignment shorthand */
+  place-items: center;
+  /* Width */
+  width: 34px;
+  /* Height */
+  height: 34px;
+  /* Remove border */
+  border: 0;
+  /* Rounded corners */
+  border-radius: 9px;
+  /* Transparent background */
+  background: transparent;
+  /* Gray tone */
+  color: #718078;
+  /* Font size */
+  font-size: 21px;
+}
+
+/* Icon button hover */
+.icon-button:hover {
+  /* Light neutral background */
+  background: #f3f4f1;
+}
+
+/* Profile biography notes */
+.profile-notes {
+  /* Side margins */
+  margin: 0 22px;
+  /* Vertical padding */
+  padding: 13px 0;
+  /* Dividing line */
+  border-bottom: 1px solid #f0f1ed;
+  /* Dark text tone */
+  color: #647169;
+  /* Font size */
+  font-size: 12px;
+  /* Line height */
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------- */
+/* SESSION LOGGING FORM                                          */
+/* ------------------------------------------------------------- */
+/* Form container */
+.session-form {
+  /* Grid stack */
+  display: grid;
+  /* Gap */
+  gap: 12px;
+  /* Form padding */
+  padding: 20px 22px;
+  /* Bottom dividing line */
+  border-bottom: 1px solid #f0f1ed;
+}
+
+/* Subheadings */
+.session-form h3, .history-heading {
+  /* Remove margin */
+  margin: 0;
+  /* Dark tone */
+  color: #314238;
+  /* Heading font size */
+  font-size: 12px;
+  /* Bold weight */
+  font-weight: 750;
+}
+
+/* Form row with two columns */
+.form-row {
+  /* Grid display */
+  display: grid;
+  /* Two equal columns */
+  grid-template-columns: 1fr 1fr;
+  /* Gap */
+  gap: 10px;
+}
+
+/* Form labels */
+label {
+  /* Stack label text over field */
+  display: grid;
+  /* Gap between text and input */
+  gap: 6px;
+  /* Gray label color */
+  color: #637168;
+  /* Font size */
+  font-size: 10px;
+  /* Bold weight */
+  font-weight: 700;
+}
+
+/* Inputs, textareas, and selects */
+input, textarea, select {
+  /* Full container width */
+  width: 100%;
+  /* Minimum height */
+  min-height: 39px;
+  /* Gray border */
+  border: 1px solid #e3e7e0;
+  /* Rounded corners */
+  border-radius: 8px;
+  /* Remove outline */
+  outline: none;
+  /* White background */
+  background: #fff;
+  /* Dark readable text */
+  color: #293a31;
+  /* Internal padding */
+  padding: 9px 11px;
+  /* Font size */
+  font-size: 12px;
+  /* Regular weight */
+  font-weight: 400;
+}
+
+/* Textarea height */
+textarea {
+  /* Taller height */
+  min-height: 66px;
+  /* Vertical resizing only */
+  resize: vertical;
+}
+
+/* Focused inputs */
+input:focus, textarea:focus, select:focus {
+  /* Brand green border */
+  border-color: #83a995;
+  /* Soft green focus ring */
+  box-shadow: 0 0 0 3px rgba(91, 137, 111, .12);
+}
+
+/* Save session button alignment */
+.session-form .button {
+  /* Align to left */
+  justify-self: start;
+  /* Height */
+  min-height: 38px;
+}
+
+/* ------------------------------------------------------------- */
+/* TRAINING HISTORY LIST                                         */
+/* ------------------------------------------------------------- */
+/* History container */
+.history {
+  /* Padding */
+  padding: 18px 22px 22px;
+}
+
+/* History header row */
+.history-heading {
+  /* Flex alignment */
+  display: flex;
+  /* Align to center */
+  align-items: center;
+  /* Space out title and count */
+  justify-content: space-between;
+  /* Bottom margin */
+  margin-bottom: 12px;
+}
+
+/* History count */
+.history-heading span {
+  /* Muted count color */
+  color: #8c9890;
+  /* Small font size */
+  font-size: 10px;
+  /* Regular weight */
+  font-weight: 500;
+}
+
+/* Session list stack */
+.session-list {
+  /* Grid display */
+  display: grid;
+  /* Gap */
+  gap: 9px;
+}
+
+/* Individual training record */
+.session-item {
+  /* Three columns: icon, content, date */
+  display: grid;
+  /* Dimensions */
+  grid-template-columns: 34px 1fr auto;
+  /* Gap */
+  gap: 10px;
+  /* Center vertically */
+  align-items: center;
+  /* Card padding */
+  padding: 10px;
+  /* Rounded corners */
+  border-radius: 10px;
+  /* Background tint */
+  background: #fafbf8;
+}
+
+/* Check icon badge */
+.session-icon {
+  /* Center check */
+  display: grid;
+  /* Alignment shorthand */
+  place-items: center;
+  /* Width */
+  width: 32px;
+  /* Height */
+  height: 32px;
+  /* Rounded corners */
+  border-radius: 10px;
+  /* Pale sage green background */
+  background: #eef1e7;
+  /* Sage icon glyph */
+  color: #71814f;
+}
+
+/* Logged behavior */
+.session-behavior {
+  /* Spacing */
+  margin: 0 0 4px;
+  /* Dark text tone */
+  color: #34443a;
+  /* Font size */
+  font-size: 11px;
+  /* Bold weight */
+  font-weight: 700;
+}
+
+/* Triggers and notes */
+.session-context {
+  /* Remove margin */
+  margin: 0;
+  /* Muted secondary tone */
+  color: var(--muted);
+  /* Small font size */
+  font-size: 10px;
+}
+
+/* Formatted date */
+.session-date {
+  /* Soft gray tone */
+  color: #849087;
+  /* Small font size */
+  font-size: 9px;
+  /* Prevent wrapping */
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- */
+/* MODAL DIALOG POPUP STYLES                                     */
+/* ------------------------------------------------------------- */
+/* Native dialog container */
+dialog, .dog-dialog, .dialog {
+  /* Responsive modal width */
+  width: min(460px, calc(100% - 30px));
+  /* Override user-agent max-width limits */
+  max-width: none;
+  /* Remove default padding */
+  padding: 0;
+  /* Remove default border */
+  border: 0;
+  /* Rounded corners */
+  border-radius: 16px;
+  /* Transparent shell */
+  background: transparent;
+  /* Depth shadow */
+  box-shadow: 0 24px 90px rgba(25, 39, 31, .23);
+}
+
+/* Modal backdrop blur */
+dialog::backdrop, .dog-dialog::backdrop, .dialog::backdrop {
+  /* Dark translucent backdrop */
+  background: rgba(26, 38, 31, .38);
+  /* Frosted blur */
+  backdrop-filter: blur(3px);
+}
+
+/* Modal interior card */
+.dialog-card {
+  /* Grid stack */
+  display: grid;
+  /* Gap */
+  gap: 16px;
+  /* Padding */
+  padding: 25px;
+  /* Rounded corners */
+  border-radius: 16px;
+  /* White card background */
+  background: white;
+}
+
+/* Modal header */
+.dialog-header, .dialog-heading {
+  /* Flex alignment */
+  display: flex;
+  /* Align to top */
+  align-items: flex-start;
+  /* Title on left, close icon on right */
+  justify-content: space-between;
+  /* Bottom spacing */
+  margin-bottom: 2px;
+}
+
+/* Modal heading title */
+.dialog-header h2, .dialog-heading h2 {
+  /* Remove margin */
+  margin: 0;
+  /* Dark text */
+  color: #263a30;
+  /* Serif typeface */
+  font-family: Georgia, serif;
+  /* Font size */
+  font-size: 24px;
+  /* Medium weight */
+  font-weight: 500;
+}
+
+/* Dialog form grid */
+.dialog-form {
+  /* Grid layout */
+  display: grid;
+  /* Gap between inputs */
+  gap: 14px;
+}
+
+/* Action button group at bottom of modal */
+.dialog-actions {
+  /* Flex alignment */
+  display: flex;
+  /* Push buttons to far right */
+  justify-content: flex-end;
+  /* Gap */
+  gap: 8px;
+  /* Top spacing */
+  margin-top: 5px;
+}
+
+/* ------------------------------------------------------------- */
+/* ERROR PANEL & LOADING STATES                                  */
+/* ------------------------------------------------------------- */
+/* Error panel card */
+.error-panel {
+  /* Maximum card width */
+  max-width: 640px;
+  /* Center horizontally */
+  margin: 50px auto;
+  /* Padding */
+  padding: 24px;
+  /* Red border */
+  border: 1px solid #edc3bc;
+  /* Rounded corners */
+  border-radius: 14px;
+  /* Soft pink background */
+  background: #fff6f4;
+  /* Crimson text tone */
+  color: #713b32;
+}
+
+/* Error panel heading */
+.error-panel h1 {
+  /* Error title size */
+  font-size: 27px;
+}
+
+/* Loading state placeholder */
+.loading, .loading-state {
+  /* Muted tone */
+  color: var(--muted);
+  /* Center text */
+  text-align: center;
+  /* Vertical padding */
+  padding: 40px 0;
+  /* Font size */
+  font-size: 14px;
+}
+
+/* ------------------------------------------------------------- */
+/* RESPONSIVE LAYOUT ADJUSTMENTS                                 */
+/* ------------------------------------------------------------- */
+/* Tablet & Mobile Breakpoint (<= 760px) */
+@media (max-width: 760px) {
+  /* Compact navbar height */
+  .app-header, .topbar {
+    /* Reduced height */
+    height: 66px;
+    /* Reduced horizontal padding */
+    padding: 0 18px;
+  }
+
+  /* Responsive main container */
+  main, .page-shell {
+    /* Narrow container width */
+    width: min(100% - 30px, 560px);
+    /* Reduced top margin */
+    margin-top: 30px;
+  }
+
+  /* Stack welcome banner */
+  .welcome {
+    /* Block layout */
+    display: block;
+  }
+
+  /* Compact 3-column stats */
+  .stats {
+    /* Constrain column width */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    /* Narrower gap */
+    gap: 8px;
+  }
+
+  /* Compact stat card */
+  .stat-card {
+    /* Stack icon and number */
+    display: block;
+    /* Height constraint */
+    min-height: 95px;
+    /* Reduced padding */
+    padding: 12px;
+  }
+
+  /* Smaller stat icon */
+  .stat-icon {
+    /* Smaller width */
+    width: 30px;
+    /* Smaller height */
+    height: 30px;
+    /* Bottom spacing */
+    margin-bottom: 8px;
+    /* Smaller corner radius */
+    border-radius: 9px;
+    /* Smaller font size */
+    font-size: 14px;
+  }
+
+  /* Smaller stat value */
+  .stat-value {
+    /* Smaller numeric size */
+    font-size: 19px;
+  }
+
+  /* Smaller stat label */
+  .stat-label {
+    /* Compact label size */
+    font-size: 9px;
+  }
+
+  /* Single-column stack on smaller screens */
+  .content-grid {
+    /* Single column */
+    grid-template-columns: 1fr;
+    /* Vertical gap */
+    gap: 15px;
+  }
+}
+
+/* Small Smartphone Breakpoint (<= 390px) */
 @media (max-width: 390px) {
-  .brand { font-size: 17px; }
-  .topbar-actions .button { padding: 0 11px; font-size: 11px; }
-  .form-row { grid-template-columns: 1fr; }
-  .session-date { white-space: normal; text-align: right; }
+  /* Smaller brand logo */
+  .brand {
+    /* Compact font size */
+    font-size: 17px;
+  }
+
+  /* Stack form rows vertically */
+  .form-row {
+    /* Single column */
+    grid-template-columns: 1fr;
+  }
+
+  /* Wrap timestamps */
+  .session-date {
+    /* Allow wrapping */
+    white-space: normal;
+    /* Right align */
+    text-align: right;
+  }
 }
