@@ -1,25 +1,32 @@
 // -------------------------------------------------------------
 // FIREBASE MODULE IMPORTS
 // -------------------------------------------------------------
-// Import core Firebase initialization helper from official CDN.
+// Core Firebase initialization helper.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
-// Import Firestore database instance and real-time query listener from official CDN.
+// Firestore database functions and listeners.
 import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Import storage helpers, formatters, and calculation functions from the sibling storage.js file in src/.
+// Firebase Authentication functions.
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+// Storage helpers from local module.
 import { 
   createDog, 
   createSession, 
   deleteDog, 
-  calculateAgeYears,
+  calculateAgeYears, 
   extractId 
 } from "./storage.js";
 
 // -------------------------------------------------------------
-// FIREBASE CONFIGURATION & INITIALIZATION
+// FIREBASE INITIALIZATION
 // -------------------------------------------------------------
-// Project configuration credentials.
 const firebaseConfig = {
   apiKey: "AIzaSyD7TWP-avTLAy-TlxfZhN-Ck3pR-fp6su0",
   authDomain: "dog-tracks-24243.firebaseapp.com",
@@ -36,46 +43,41 @@ const app = initializeApp(firebaseConfig);
 // Initialize Cloud Firestore database.
 const db = getFirestore(app);
 
-// -------------------------------------------------------------
-// TEMPORARY ADMIN CONFIGURATION
-// -------------------------------------------------------------
-// Displays raw database inspector and sample seeding button.
-const ADMIN_MODE = true;
+// Initialize Firebase Authentication.
+const auth = getAuth(app);
 
 // -------------------------------------------------------------
 // DOM REFERENCES
 // -------------------------------------------------------------
-// Root container where application components are rendered.
 const root = document.querySelector('#app');
-
-// Modal dialog used to capture new dog profiles.
 const dogDialog = document.querySelector('#dog-dialog');
-
-// Form contained within the modal dialog.
 const dogForm = document.querySelector('#dog-form');
-
-// Trigger button used to open the modal dialog.
 const openDogDialogBtn = document.querySelector('#open-dog-dialog');
+const closeDogDialogButtons = document.querySelectorAll('[data-close-dialog]');
 
-// Buttons configured to dismiss the modal dialog.
-const closeDialogButtons = document.querySelectorAll('[data-close-dialog]');
+// Admin login modal references.
+const loginDialog = document.querySelector('#login-dialog');
+const loginForm = document.querySelector('#login-form');
+const authBtn = document.querySelector('#auth-btn');
+const closeLoginButtons = document.querySelectorAll('[data-close-login]');
 
 // -------------------------------------------------------------
-// IN-MEMORY APPLICATION STATE
+// APPLICATION STATE
 // -------------------------------------------------------------
-// Real-time state cache synced directly from Firestore snapshot listeners.
+let currentUser = null;
+let unsubscribeDogs = null;
+let unsubscribeSessions = null;
+
 let state = {
   dogs: [],
   sessions: []
 };
 
-// ID of the dog currently active in the viewer.
 let selectedDogId = null;
 
 // -------------------------------------------------------------
-// UTILITY FUNCTIONS
+// UTILITIES
 // -------------------------------------------------------------
-// Sanitize arbitrary text to prevent Cross-Site Scripting (XSS).
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({
     '&': '&amp;',
@@ -86,90 +88,55 @@ function escapeHtml(value) {
   })[character]);
 }
 
-// Convert timestamps and dates into localized, human-readable strings.
 function relativeDate(value) {
   const date = value?.toDate ? value.toDate() : new Date(value);
   if (Number.isNaN(date.getTime())) return 'Date unavailable';
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
-// Find and return the currently selected dog entity from state.
 function selectedDog() {
   return state.dogs.find((d) => d.id === selectedDogId) ?? state.dogs[0] ?? null;
 }
 
-// Render an error panel if database or execution errors occur.
 function showError(message) {
   if (!root) return;
   root.innerHTML = `
     <section class="error-panel">
-      <p class="eyebrow">FIREBASE ERROR</p>
-      <h1>DogTracks couldn't connect</h1>
+      <p class="eyebrow">ACCESS DENIED / ERROR</p>
+      <h1>DogTracks couldn't continue</h1>
       <p><strong>Details:</strong> ${escapeHtml(message)}</p>
-      <p>If this mentions <em>insufficient permissions</em>, open your <a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a> &gt; <strong>Firestore Database</strong> &gt; <strong>Rules</strong> and allow read and write access for development.</p>
     </section>`;
-}
-
-// -------------------------------------------------------------
-// TEMPORARY ADMIN PANEL BUILDER
-// -------------------------------------------------------------
-// Generates an administrative inspector view showing all raw documents in the database.
-function buildAdminPanel() {
-  if (!ADMIN_MODE) return '';
-
-  return `
-    <section class="panel" style="margin-bottom: 24px; border: 2px dashed #b77a34; background: #fffcf8; padding: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <div>
-          <span style="background: #b77a34; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">TEMPORARY ADMIN</span>
-          <strong style="margin-left: 8px; font-size: 13px;">Raw Firestore Inspection Mode</strong>
-        </div>
-        <div>
-          <button type="button" id="admin-seed-btn" class="button button-quiet" style="font-size: 11px; min-height: 28px; padding: 0 10px;">
-            + Inject Test Dog &amp; Session
-          </button>
-        </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 11px;">
-        <!-- ALL DOGS IN FIRESTORE -->
-        <div style="background: white; border: 1px solid #e8eae4; border-radius: 8px; padding: 12px; max-height: 220px; overflow-y: auto;">
-          <strong>All Dogs in Firestore (${state.dogs.length})</strong>
-          ${
-            state.dogs.length === 0
-              ? '<p style="color: #728078; margin-top: 6px;">No documents in the "Dogs" collection.</p>'
-              : `<pre style="margin-top: 6px; white-space: pre-wrap; word-break: break-all;">${escapeHtml(JSON.stringify(state.dogs, null, 2))}</pre>`
-          }
-        </div>
-
-        <!-- ALL SESSIONS IN FIRESTORE -->
-        <div style="background: white; border: 1px solid #e8eae4; border-radius: 8px; padding: 12px; max-height: 220px; overflow-y: auto;">
-          <strong>All Sessions in Firestore (${state.sessions.length})</strong>
-          ${
-            state.sessions.length === 0
-              ? '<p style="color: #728078; margin-top: 6px;">No documents in the "Sessions" collection.</p>'
-              : `<pre style="margin-top: 6px; white-space: pre-wrap; word-break: break-all;">${escapeHtml(JSON.stringify(state.sessions, null, 2))}</pre>`
-          }
-        </div>
-      </div>
-    </section>
-  `;
 }
 
 // -------------------------------------------------------------
 // MAIN RENDER FUNCTION
 // -------------------------------------------------------------
-// Builds the whole dynamic UI based on current state.
 function render() {
   if (!root) return;
 
-  // Identify active dog.
-  const dog = selectedDog();
+  // If user is not authenticated, show a clean locked gate screen.
+  if (!currentUser) {
+    root.innerHTML = `
+      <section class="panel empty-state" style="margin-top: 40px; padding: 48px 24px;">
+        <span class="brand-mark" style="margin: 0 auto 16px; width: 48px; height: 48px; font-size: 26px;">🔒</span>
+        <h2 style="color: #253930; font-family: Georgia, serif; font-size: 26px; margin-bottom: 8px;">Admin Login Required</h2>
+        <p style="color: var(--muted); max-width: 420px; margin: 0 auto 20px;">
+          This database is protected. Please sign in with your administrator credentials to view and manage dog training records.
+        </p>
+        <button type="button" class="button button-primary" id="gate-login-btn">
+          Open Admin Login
+        </button>
+      </section>
+    `;
+    document.querySelector('#gate-login-btn')?.addEventListener('click', () => loginDialog?.showModal());
+    return;
+  }
 
-  // Maintain active dog selection.
+  // Active dog resolution.
+  const dog = selectedDog();
   selectedDogId = dog ? dog.id : null;
 
-  // Filter sessions matching active dog and sort descending by time.
+  // Filter training sessions for this dog.
   const sessions = dog
     ? state.sessions
         .filter((session) => extractId(session.DogId) === dog.id)
@@ -180,7 +147,6 @@ function render() {
         })
     : [];
 
-  // Summary counts.
   const sessionCount = sessions.length;
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const recentCount = sessions.filter((s) => {
@@ -188,64 +154,42 @@ function render() {
     return time >= sevenDaysAgo;
   }).length;
 
-  // Dynamically compute active dog's age from birthdate.
   const activeDogAge = dog ? calculateAgeYears(dog.DateOfBirth) : 0;
 
-  // Inject markup.
+  // Render authenticated dashboard.
   root.innerHTML = `
-    <!-- TEMPORARY ADMIN INSPECTION BAR -->
-    ${buildAdminPanel()}
-
     <section class="welcome">
       <div>
-        <p class="eyebrow">YOUR TRAINING JOURNAL</p>
+        <p class="eyebrow">AUTHENTICATED AS: ${escapeHtml(currentUser.email)}</p>
         <h1>Small steps, stronger bonds.</h1>
-        <p class="welcome-copy">A little consistency goes a long way. Here's your progress so far.</p>
+        <p class="welcome-copy">Your secure training journal progress.</p>
       </div>
     </section>
 
     <section class="stats" aria-label="Training overview">
-      <a href="dogs-overview.html" class="stat-card">
+      <article class="stat-card">
         <span class="stat-icon" aria-hidden="true">♧</span>
-<<<<<<< Updated upstream
-        <div><p class="stat-value">${state.dogs.length}</p><p class="stat-label">Dogs in your care</p></div>
-      </a>
-=======
         <div>
           <p class="stat-value">${state.dogs.length}</p>
           <p class="stat-label">Dogs in your care</p>
         </div>
       </article>
->>>>>>> Stashed changes
 
-
-      <a href="training-log.html" class="stat-card">
+      <article class="stat-card">
         <span class="stat-icon" aria-hidden="true">✓</span>
-<<<<<<< Updated upstream
-        <div><p class="stat-value">${sessionCount}</p><p class="stat-label">Training entries</p></div>
-      </a>
-=======
         <div>
           <p class="stat-value">${sessionCount}</p>
           <p class="stat-label">Training entries</p>
         </div>
       </article>
->>>>>>> Stashed changes
 
-
-      <a href="analytics.html" class="stat-card">
+      <article class="stat-card">
         <span class="stat-icon" aria-hidden="true">↗</span>
-<<<<<<< Updated upstream
-        <div><p class="stat-value">${recentCount}</p><p class="stat-label">Entries this week</p></div>
-      </a>
-
-=======
         <div>
           <p class="stat-value">${recentCount}</p>
           <p class="stat-label">Entries this week</p>
         </div>
       </article>
->>>>>>> Stashed changes
     </section>
 
     <section class="content-grid">
@@ -254,7 +198,7 @@ function render() {
         <div class="panel-heading">
           <div>
             <h2 id="dogs-heading">Your dogs</h2>
-            <p>Choose a profile to see its history</p>
+            <p>Choose a profile to see history</p>
           </div>
           <span class="count-badge">${state.dogs.length}</span>
         </div>
@@ -284,7 +228,7 @@ function render() {
                   })
                   .join('')}
               </div>`
-            : '<p class="empty-state">No dog profiles yet. Click "+ Add Dog" above to create your first profile.</p>'
+            : '<p class="empty-state">No dog profiles yet. Click "+ Add Dog" above to create one.</p>'
         }
       </article>
 
@@ -303,7 +247,7 @@ function render() {
           </div>
           <button class="icon-button" type="button"
             data-delete-dog="${escapeHtml(dog.id)}"
-            aria-label="Delete ${escapeHtml(dog.Name)} profile"
+            aria-label="Delete profile"
             title="Delete profile">×</button>
         </div>
 
@@ -366,16 +310,13 @@ function render() {
           : `
       <article class="panel detail-panel empty-state">
         <h2>No dog selected</h2>
-        <p>Add a dog profile to begin tracking training progress.</p>
+        <p>Add or select a dog to manage training logs.</p>
       </article>`
       }
     </section>
   `;
 
-  // -------------------------------------------------------------
-  // RE-BIND DYNAMIC DOM LISTENERS
-  // -------------------------------------------------------------
-  // Bind click handlers to switch selected dogs.
+  // Dynamic handlers.
   root.querySelectorAll('[data-select-dog]').forEach((button) => {
     button.addEventListener('click', () => {
       selectedDogId = button.dataset.selectDog;
@@ -383,187 +324,156 @@ function render() {
     });
   });
 
-  // Bind session form submit handler.
   root.querySelector('#session-form')?.addEventListener('submit', onSessionSubmit);
-
-  // Bind delete dog button.
   root.querySelector('[data-delete-dog]')?.addEventListener('click', onDeleteDog);
-
-  // Bind admin injection button.
-  root.querySelector('#admin-seed-btn')?.addEventListener('click', injectTestData);
 }
 
 // -------------------------------------------------------------
-// FORM ACTIONS & FIRESTORE CALLS
+// FIRESTORE CRUD OPERATIONS
 // -------------------------------------------------------------
-// Submits a new session for the active dog.
 async function onSessionSubmit(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const values = Object.fromEntries(new FormData(form));
 
-  if (!selectedDogId) {
-    window.alert("Please select a dog before logging a training entry.");
-    return;
-  }
+  if (!selectedDogId) return;
 
   try {
-    // Write entry to Firestore via createSession helper.
     await createSession(db, {
       ...values,
       DogId: selectedDogId
     });
-
-    // Reset form inputs.
     form.reset();
   } catch (error) {
-    console.error("Failed to add session:", error);
-    window.alert(`Could not save entry: ${error.message}`);
+    window.alert(`Could not save session: ${error.message}`);
   }
 }
 
-// Deletes the active dog and triggers cascade cleanup.
 async function onDeleteDog() {
   const dog = selectedDog();
-  if (!dog || !window.confirm(`Delete ${dog.Name} and its training history? This cannot be undone.`)) {
-    return;
-  }
+  if (!dog || !window.confirm(`Delete ${dog.Name} and training entries?`)) return;
 
   try {
-    // Delete profile and cascade-delete sessions via deleteDog helper.
     await deleteDog(db, dog.id);
-
-    // Reset selection if active dog was removed.
-    if (selectedDogId === dog.id) {
-      selectedDogId = null;
-    }
+    if (selectedDogId === dog.id) selectedDogId = null;
   } catch (error) {
-    console.error("Failed to delete dog:", error);
     showError(error.message);
   }
 }
 
-// Helper to inject a test dog profile and session to verify database connectivity.
-async function injectTestData() {
-  try {
-    // Generate an approximate birth date 2 years ago.
-    const twoYearsAgo = new Date();
-    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
-
-    // 1. Create a sample dog.
-    const dogDocRef = await createDog(db, {
-      Name: "Bailey (Test)",
-      Breed: "Golden Retriever",
-      DateOfBirth: twoYearsAgo.toISOString().split('T')[0],
-      Notes: "Injected via Temporary Admin Panel"
-    });
-
-    // 2. Create a sample session linked to that dog.
-    await createSession(db, {
-      DogId: dogDocRef.id,
-      Behavior: "Loose-leash walking",
-      Trigger: "Passing another dog",
-      Notes: "Remained attentive with positive reinforcement.",
-      OccurredAt: new Date().toISOString()
-    });
-
-    // Notify user.
-    window.alert("Sample test record successfully created in Firestore!");
-  } catch (error) {
-    console.error("Admin injection failed:", error);
-    window.alert(`Failed to write to Firestore: ${error.message}`);
-  }
-}
-
 // -------------------------------------------------------------
-// STATIC LISTENERS (Modal & Dialog)
+// STATIC LISTENERS (Dialogs & Forms)
 // -------------------------------------------------------------
-// Open modal dialog.
-openDogDialogBtn?.addEventListener('click', () => {
-  dogDialog?.showModal();
-});
+// Open/close Add Dog dialog.
+openDogDialogBtn?.addEventListener('click', () => dogDialog?.showModal());
+closeDogDialogButtons.forEach((btn) => btn.addEventListener('click', () => dogDialog?.close()));
 
-// Close dialog via close/cancel buttons.
-closeDialogButtons.forEach((btn) => {
-  btn.addEventListener('click', () => dogDialog?.close());
-});
+// Close dialog on outside backdrop click.
+dogDialog?.addEventListener('click', (e) => { if (e.target === dogDialog) dogDialog.close(); });
+loginDialog?.addEventListener('click', (e) => { if (e.target === loginDialog) loginDialog.close(); });
+closeLoginButtons.forEach((btn) => btn.addEventListener('click', () => loginDialog?.close()));
 
-// Close dialog when backdrop is clicked.
-dogDialog?.addEventListener('click', (event) => {
-  if (event.target === dogDialog) dogDialog.close();
-});
-
-// Handle dog creation modal form submission.
+// Handle new dog form.
 dogForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
   const values = Object.fromEntries(new FormData(dogForm));
 
   try {
-    // Write dog document to Firestore.
     const docRef = await createDog(db, {
       Name: values.Name,
       Breed: values.Breed,
       DateOfBirth: values.DateOfBirth,
       Notes: values.Notes
     });
-
-    // Automatically focus on the newly created dog.
     selectedDogId = docRef.id;
-
-    // Reset and dismiss dialog.
     dogForm.reset();
     dogDialog.close();
   } catch (error) {
-    console.error("Failed to add dog:", error);
     window.alert(`Could not add dog: ${error.message}`);
   }
 });
 
 // -------------------------------------------------------------
-// IMMEDIATE INITIAL RENDER (PREVENTS FREEZING ON LOADING TEXT)
+// AUTHENTICATION LOGIC (SIGN IN / SIGN OUT)
 // -------------------------------------------------------------
-render();
+// Toggle login modal or trigger logout.
+authBtn?.addEventListener('click', async () => {
+  if (currentUser) {
+    await signOut(auth);
+  } else {
+    loginDialog?.showModal();
+  }
+});
+
+// Handle Login Form Submission.
+loginForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.querySelector('#login-email').value;
+  const password = document.querySelector('#login-password').value;
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    loginForm.reset();
+    loginDialog?.close();
+  } catch (error) {
+    window.alert(`Login failed: ${error.message}`);
+  }
+});
 
 // -------------------------------------------------------------
-// REAL-TIME FIRESTORE SUBSCRIPTIONS
+// REAL-TIME AUTH STATE LISTENER
 // -------------------------------------------------------------
-// Real-time listener for 'Dogs' collection.
-onSnapshot(
-  collection(db, "Dogs"),
-  (snapshot) => {
-    // Sync dogs collection into local state array.
-    state.dogs = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...docSnap.data()
-    }));
+onAuthStateChanged(auth, (user) => {
+  currentUser = user;
 
-    // Default to the first dog profile if none is currently selected.
-    if (!selectedDogId && state.dogs.length > 0) {
-      selectedDogId = state.dogs[0].id;
-    }
+  if (user) {
+    // Update button text and show "+ Add Dog".
+    authBtn.textContent = 'Log Out';
+    openDogDialogBtn.style.display = 'inline-flex';
+
+    // Start listening to Firestore once authenticated.
+    subscribeToDatabase();
+  } else {
+    // Reset UI to logged out state.
+    authBtn.textContent = 'Admin Login';
+    openDogDialogBtn.style.display = 'none';
+
+    // Detach Firestore listeners and empty cached state.
+    if (unsubscribeDogs) unsubscribeDogs();
+    if (unsubscribeSessions) unsubscribeSessions();
+    state = { dogs: [], sessions: [] };
+    selectedDogId = null;
 
     render();
-  },
-  (error) => {
-    console.error("Dogs listener failed:", error);
-    showError(`Error accessing 'Dogs' collection: ${error.message} (Code: ${error.code})`);
   }
-);
+});
 
-// Real-time listener for 'Sessions' collection.
-onSnapshot(
-  collection(db, "Sessions"),
-  (snapshot) => {
-    // Sync sessions collection into local state array.
-    state.sessions = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...docSnap.data()
-    }));
+// Attach Firestore real-time listeners for authenticated admin.
+function subscribeToDatabase() {
+  unsubscribeDogs = onSnapshot(
+    collection(db, "Dogs"),
+    (snapshot) => {
+      state.dogs = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }));
+      if (!selectedDogId && state.dogs.length > 0) {
+        selectedDogId = state.dogs[0].id;
+      }
+      render();
+    },
+    (error) => showError(`Dogs listener error: ${error.message}`)
+  );
 
-    render();
-  },
-  (error) => {
-    console.error("Sessions listener failed:", error);
-    showError(`Error accessing 'Sessions' collection: ${error.message} (Code: ${error.code})`);
-  }
-);
+  unsubscribeSessions = onSnapshot(
+    collection(db, "Sessions"),
+    (snapshot) => {
+      state.sessions = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }));
+      render();
+    },
+    (error) => showError(`Sessions listener error: ${error.message}`)
+  );
+}

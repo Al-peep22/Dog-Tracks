@@ -1,106 +1,130 @@
 <!DOCTYPE html>
-<!-- Declare standard HTML5 document type -->
+<!-- Standard HTML5 document declaration -->
 <html lang="en">
-  <!-- Head section containing metadata, links, and viewport settings -->
+  <!-- Document head containing metadata and stylesheets -->
   <head>
-    <!-- Set character encoding to standard UTF-8 -->
+    <!-- Character set definition -->
     <meta charset="UTF-8" />
-    <!-- Ensure responsive viewport scaling on mobile and desktop -->
+    <!-- Responsive layout viewport settings -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Browser window title -->
     <title>DogTracks — Dog Training Journal</title>
-    <!-- Correctly point to styles.css located in the same root folder -->
+    <!-- Stylesheet located in root dogtracks_web folder -->
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <!-- Document body containing structural markup -->
+  <!-- Document body -->
   <body>
-    <!-- Top-level navigation bar matching topbar styles -->
+    <!-- Top-level navigation bar -->
     <header class="app-header topbar">
-      <!-- Brand logo and emblem wrapper -->
+      <!-- Brand emblem and title -->
       <div class="brand">
-        <!-- Visual brand icon mark -->
+        <!-- Visual monogram badge -->
         <span class="brand-mark" aria-hidden="true">D</span>
-        <!-- Application brand name -->
+        <!-- Application title text -->
         <span class="brand-name">DogTracks</span>
       </div>
-      <!-- Actions area in top bar -->
+      <!-- Top bar action buttons -->
       <div class="topbar-actions">
-        <!-- Button targeted by document.querySelector('#open-dog-dialog') in src/app.js -->
-        <button type="button" id="open-dog-dialog" class="button button-primary">
-          <!-- Button text -->
+        <!-- Add Dog modal trigger button (hidden when logged out) -->
+        <button type="button" id="open-dog-dialog" class="button button-primary" style="display: none;">
           + Add Dog
+        </button>
+        <!-- Auth toggle button: triggers login modal or logs out -->
+        <button type="button" id="auth-btn" class="button button-quiet">
+          Admin Login
         </button>
       </div>
     </header>
 
-    <!-- Main landmark container centered by page-shell CSS rules -->
+    <!-- Main landmark shell -->
     <main class="page-shell">
-      <!-- Main dynamic mount root targeted by document.querySelector('#app') in src/app.js -->
+      <!-- Dynamic render mount point -->
       <div id="app">
-        <!-- Placeholder text shown only before app.js renders -->
-        <p class="loading-state">Loading your training journal...</p>
+        <!-- Initial prompt encouraging admin to sign in -->
+        <p class="loading-state">Please log in as Admin to access DogTracks.</p>
       </div>
     </main>
 
-    <!-- Native modal dialog targeted by document.querySelector('#dog-dialog') in src/app.js -->
-    <dialog id="dog-dialog" class="dialog dog-dialog" aria-labelledby="dialog-title">
+    <!-- ADMIN LOGIN MODAL DIALOG -->
+    <dialog id="login-dialog" class="dialog dog-dialog" aria-labelledby="login-title">
       <!-- Inner modal card frame -->
       <div class="dialog-card">
-        <!-- Header containing modal title and dismiss icon -->
+        <!-- Dialog top header -->
         <div class="dialog-header dialog-heading">
           <!-- Accessible dialog title -->
-          <h2 id="dialog-title">Add a dog profile</h2>
-          <!-- Close button targeted by closeDialogButtons in src/app.js -->
-          <button type="button" class="icon-button" data-close-dialog aria-label="Close dialog">
-            <!-- Close cross symbol -->
+          <h2 id="login-title">Admin Sign In</h2>
+          <!-- Dismiss button -->
+          <button type="button" class="icon-button" data-close-login aria-label="Close dialog">
             &times;
           </button>
         </div>
 
-        <!-- HTML Form targeted by document.querySelector('#dog-form') in src/app.js -->
-        <form id="dog-form" class="dialog-form" method="dialog">
-          <!-- Dog Name input field matching schema 'Name' -->
+        <!-- Form targeted by app.js for Firebase Authentication -->
+        <form id="login-form" class="dialog-form" method="dialog">
+          <!-- Email field -->
           <label>
-            <!-- Field title text -->
+            Admin Email
+            <input type="email" id="login-email" required placeholder="admin@dogtracks.com" />
+          </label>
+
+          <!-- Password field -->
+          <label>
+            Password
+            <input type="password" id="login-password" required placeholder="••••••••" />
+          </label>
+
+          <!-- Action buttons -->
+          <div class="dialog-actions">
+            <button type="button" class="button button-secondary" data-close-login>
+              Cancel
+            </button>
+            <button type="submit" class="button button-primary">
+              Log In
+            </button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
+    <!-- ADD DOG MODAL DIALOG -->
+    <dialog id="dog-dialog" class="dialog dog-dialog" aria-labelledby="dialog-title">
+      <!-- Card frame -->
+      <div class="dialog-card">
+        <!-- Dialog header -->
+        <div class="dialog-header dialog-heading">
+          <h2 id="dialog-title">Add a dog profile</h2>
+          <button type="button" class="icon-button" data-close-dialog aria-label="Close dialog">
+            &times;
+          </button>
+        </div>
+
+        <!-- Form to add new dog document -->
+        <form id="dog-form" class="dialog-form" method="dialog">
+          <label>
             Dog's Name
-            <!-- Text input for Name -->
             <input type="text" name="Name" required maxlength="50" placeholder="e.g. Bailey" />
           </label>
 
-          <!-- Dog Breed input field matching schema 'Breed' -->
           <label>
-            <!-- Field title text -->
             Breed
-            <!-- Text input for Breed -->
             <input type="text" name="Breed" maxlength="50" placeholder="e.g. Labrador Retriever" />
           </label>
 
-          <!-- Dog DateOfBirth input field matching schema 'DateOfBirth' -->
           <label>
-            <!-- Field title text -->
             Date of Birth
-            <!-- Date picker input for DateOfBirth -->
             <input type="date" name="DateOfBirth" required />
           </label>
 
-          <!-- Dog Notes textarea matching schema 'Notes' -->
           <label>
-            <!-- Field title text -->
             Profile Notes
-            <!-- Textarea for Notes -->
             <textarea name="Notes" maxlength="300" placeholder="Favorite cues, triggers, or personality traits..."></textarea>
           </label>
 
-          <!-- Action buttons row -->
           <div class="dialog-actions">
-            <!-- Cancel button marked with data-close-dialog -->
             <button type="button" class="button button-secondary" data-close-dialog>
-              <!-- Button label -->
               Cancel
             </button>
-            <!-- Submit button triggering dogForm event listener in src/app.js -->
             <button type="submit" class="button button-primary">
-              <!-- Button label -->
               Save Dog Profile
             </button>
           </div>
@@ -108,7 +132,7 @@
       </div>
     </dialog>
 
-    <!-- Correct relative path to app.js inside the src/ folder -->
+    <!-- Path to app.js inside src/ folder -->
     <script type="module" src="./src/app.js"></script>
   </body>
 </html>
