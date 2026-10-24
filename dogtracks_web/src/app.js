@@ -167,29 +167,32 @@ function render() {
     </section>
 
     <section class="stats" aria-label="Training overview">
-      <article class="stat-card">
+      <a href="dogs-overview.html" class="stat-card">
         <span class="stat-icon" aria-hidden="true">♧</span>
         <div>
           <p class="stat-value">${state.dogs.length}</p>
           <p class="stat-label">Dogs in your care</p>
         </div>
-      </article>
+      </a>
 
-      <article class="stat-card">
+
+      <a href="training-log.html" class="stat-card">
         <span class="stat-icon" aria-hidden="true">✓</span>
         <div>
           <p class="stat-value">${sessionCount}</p>
           <p class="stat-label">Training entries</p>
         </div>
-      </article>
+      </a>
 
-      <article class="stat-card">
+
+      <a href="analytics.html" class="stat-card">
         <span class="stat-icon" aria-hidden="true">↗</span>
         <div>
           <p class="stat-value">${recentCount}</p>
           <p class="stat-label">Entries this week</p>
         </div>
-      </article>
+      </a>
+
     </section>
 
     <section class="content-grid">
