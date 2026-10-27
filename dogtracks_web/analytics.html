@@ -1,13 +1,78 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <title>DogTracks | Analytics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Shared styles -->
     <link rel="stylesheet" href="styles.css">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Analytics logic -->
     <script type="module" src="src/analytics.js"></script>
   </head>
+
   <body>
-    <main id="analytics-root"></main>
+    <!-- Top navigation bar -->
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="DogTracks home">
+        <span class="brand-mark" aria-hidden="true">D</span>
+        <span>DogTracks</span>
+      </a>
+
+      <div class="topbar-actions">
+        <span class="local-badge">
+          <span aria-hidden="true"></span>
+          <span>Analytics dashboard</span>
+        </span>
+      </div>
+    </header>
+
+    <!-- Main analytics container -->
+    <main id="analytics-root" class="page-shell">
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">TRAINING INSIGHTS</p>
+            <h1>Progress over time</h1>
+            <p class="welcome-copy">
+              Visualize how your training entries grow across dogs and behaviors.
+            </p>
+          </div>
+        </div>
+
+        <!-- Dog selector + color controls -->
+        <section class="dog-controls" aria-label="Dog display settings">
+          <h2>Dogs shown</h2>
+          <p class="welcome-copy">Toggle dogs on/off and customize their chart colors.</p>
+          <div id="dog-toggle-list" class="dog-toggle-list"></div>
+        </section>
+
+        <!-- Charts grid -->
+        <section class="analytics-grid">
+          <!-- Timeline chart -->
+          <article class="panel" aria-label="Timeline chart">
+            <h2>Entries over time</h2>
+            <canvas id="timeline-chart"></canvas>
+          </article>
+
+          <!-- Behavior frequency chart -->
+          <article class="panel" aria-label="Behavior frequency chart">
+            <h2>Behavior frequency</h2>
+            <canvas id="behavior-chart"></canvas>
+          </article>
+
+          <!-- Weekly activity heatmap -->
+          <article class="panel" aria-label="Weekly activity heatmap">
+            <h2>Weekly activity</h2>
+            <canvas id="heatmap-chart"></canvas>
+          </article>
+        </section>
+      </section>
+    </main>
   </body>
 </html>
 

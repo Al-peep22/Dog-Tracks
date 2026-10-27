@@ -214,3 +214,71 @@ export async function createSession(db, input) {
   // Add document to the 'Sessions' collection.
   return await addDoc(collection(db, "Sessions"), sessionPayload);
 }
+
+// -------------------------------------------------------------
+
+// LOAD ALL DATA FROM FIRESTORE (Dogs + Sessions)
+
+// -------------------------------------------------------------
+
+export async function loadState(db) {
+
+  // Fetch dogs
+
+  const dogSnapshot = await getDocs(collection(db, "Dogs"));
+
+  const dogs = dogSnapshot.docs.map(docSnap => {
+
+    const data = docSnap.data();
+
+    return {
+
+      id: docSnap.id,
+
+      name: data.Name,
+
+      breed: data.Breed,
+
+      notes: data.Notes,
+
+      dateOfBirth: data.DateOfBirth.toDate().toISOString(),
+
+      ageYears: calculateAgeYears(data.DateOfBirth),
+
+    };
+
+  });
+
+
+
+  // Fetch sessions
+
+  const sessionSnapshot = await getDocs(collection(db, "Sessions"));
+
+  const sessions = sessionSnapshot.docs.map(docSnap => {
+
+    const data = docSnap.data();
+
+    return {
+
+      id: docSnap.id,
+
+      dogId: extractId(data.DogId),
+
+      behavior: data.Behavior,
+
+      trigger: data.Trigger,
+
+      notes: data.Notes,
+
+      occurredAt: data.OccurredAt.toDate().toISOString(),
+
+    };
+
+  });
+
+
+
+  return { dogs, sessions };
+
+}
