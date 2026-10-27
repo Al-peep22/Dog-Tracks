@@ -9,13 +9,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Browser window title -->
     <title>DogTracks — Dog Training Journal</title>
-    <!-- Stylesheet located in root dogtracks_web folder -->
     <!-- Stylesheet located in root folder -->
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <!-- Document body -->
   <body>
-    <!-- Top-level navigation bar -->
     <!-- Top-level navigation bar matching topbar styles -->
     <header class="app-header topbar">
       <!-- Brand emblem and title -->
@@ -48,15 +46,11 @@
     <main class="page-shell">
       <!-- Dynamic render mount point -->
       <div id="app">
-        <!-- Initial prompt encouraging admin to sign in -->
-        <p class="loading-state">Please log in as Admin to access DogTracks.</p>
         <!-- Initial placeholder before app.js renders -->
         <p class="loading-state">Loading DogTracks...</p>
       </div>
     </main>
 
-    <!-- ADMIN LOGIN MODAL DIALOG -->
-    <dialog id="login-dialog" class="dialog dog-dialog" aria-labelledby="login-title">
     <!-- AUTHENTICATION (LOGIN & SIGN UP) MODAL DIALOG -->
     <dialog id="auth-dialog" class="dialog dog-dialog" aria-labelledby="auth-modal-title">
       <!-- Inner modal card frame -->
@@ -64,16 +58,13 @@
         <!-- Dialog top header -->
         <div class="dialog-header dialog-heading">
           <!-- Accessible dialog title -->
-          <h2 id="login-title">Admin Sign In</h2>
           <h2 id="auth-modal-title">Account Access</h2>
           <!-- Dismiss button -->
-          <button type="button" class="icon-button" data-close-login aria-label="Close dialog">
           <button type="button" class="icon-button" data-close-auth aria-label="Close dialog">
             &times;
           </button>
         </div>
 
-        <!-- Form targeted by app.js for Firebase Authentication -->
         <!-- Tab switcher to alternate between Login and Sign Up -->
         <div class="auth-tabs" style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
           <!-- Tab button for Login -->
@@ -90,8 +81,6 @@
         <form id="login-form" class="dialog-form" method="dialog">
           <!-- Email field -->
           <label>
-            Admin Email
-            <input type="email" id="login-email" required placeholder="admin@dogtracks.com" />
             Email Address
             <input type="email" id="login-email" required placeholder="user@example.com" />
           </label>
@@ -104,7 +93,6 @@
 
           <!-- Action buttons -->
           <div class="dialog-actions">
-            <button type="button" class="button button-secondary" data-close-login>
             <button type="button" class="button button-secondary" data-close-auth>
               Cancel
             </button>
@@ -205,7 +193,6 @@
       </div>
     </dialog>
 
-    <!-- Path to app.js inside src/ folder -->
     <!-- Correct relative path to app.js inside src/ -->
     <script type="module" src="./src/app.js"></script>
   </body>
