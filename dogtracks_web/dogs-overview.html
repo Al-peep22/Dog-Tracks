@@ -1,25 +1,657 @@
-<!doctype html>
-<html>
+
+<!DOCTYPE html>
+<!-- Standard HTML5 document declaration -->
+<html lang="en">
+  <!-- Document head containing metadata and stylesheets -->
   <head>
-    <meta charset="utf-8">
+    <!-- Character set definition -->
+    <meta charset="UTF-8" />
+    <!-- Responsive layout viewport settings -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Browser window title -->
     <title>DogTracks | Dogs Overview</title>
-    <link rel="stylesheet" href="styles.css">
-    <script type="module" src="src/dog-overview.js"></script>
+    <!-- Stylesheet located in root dogtracks_web folder -->
+    <link rel="stylesheet" href="./styles.css" />
+    <!-- Overview page styles, embedded so only styles.css is needed.
+         Builds on styles.css tokens (--green, --line, --muted, .panel, .stat-card, ...). -->
+    <style>
+/* ------------------------------------------------------------- */
+/* DOGS OVERVIEW PAGE                                            */
+/* Builds on styles.css (tokens, .panel, .stat-card, .welcome,   */
+/* dialogs). Everything is scoped to #dog-overview-root or the   */
+/* customize dialog, so nothing here affects index.html.         */
+/* Embedded in this page, so styles.css needs no changes.       */
+/* ------------------------------------------------------------- */
+
+/* Page stack */
+#dog-overview-root {
+  display: grid;
+  gap: 24px;
+}
+
+/* Keep the [hidden] attribute working on grid/flex elements */
+#dog-overview-root [hidden],
+#customize-dialog [hidden] {
+  display: none !important;
+}
+
+#dog-overview-root .welcome {
+  margin-bottom: 4px;
+}
+
+/* Anchors styled as buttons need flex centering (buttons center natively) */
+a.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ------------------------------------------------------------- */
+/* QUICK STATS (reuses .stats / .stat-card)                      */
+/* ------------------------------------------------------------- */
+#dog-overview-root .stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 0;
+}
+
+/* Panel content area under .panel-heading */
+#dog-overview-root .panel-body {
+  padding: 0 23px 23px;
+}
+
+/* ------------------------------------------------------------- */
+/* DOG CARD GRID                                                 */
+/* ------------------------------------------------------------- */
+.dog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.dog-card {
+  --dog-color: #315f4e; /* overridden per dog by JS */
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--dog-color);
+  border-radius: 14px;
+  background: #fafbf8;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.dog-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(38, 58, 47, .08);
+}
+
+.dog-card-head {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.dog-card-body {
+  min-width: 0;
+}
+
+.dog-card-body .dog-name {
+  margin: 0;
+  font-size: 14px;
+}
+
+.dog-card-body p {
+  margin: 4px 0 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Avatar: same rounded-square shape as .detail-avatar, filled with the
+   dog's dedicated color. Scoped so the journal page keeps its own look. */
+#dog-overview-root .dog-avatar,
+#customize-dialog .dog-avatar {
+  --dog-color: #315f4e;
+  width: 54px;
+  height: 54px;
+  overflow: hidden;
+  border-radius: 17px;
+  background: var(--dog-color);
+  color: #fff;
+  font-size: 22px;
+}
+
+.dog-avatar-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Per-dog quick stats */
+.dog-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 12px 0;
+  border-top: 1px solid #f0f1ed;
+  border-bottom: 1px solid #f0f1ed;
+  text-align: center;
+}
+
+.dog-stats dt {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.dog-stats dd {
+  margin: 5px 0 0;
+  color: #2c3b33;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dog-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.dog-card-actions .button {
+  flex: 1;
+  min-height: 36px;
+}
+
+/* ------------------------------------------------------------- */
+/* TIMELINE + BREED SPLIT                                        */
+/* ------------------------------------------------------------- */
+.overview-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+/* Age timeline */
+.timeline-chart {
+  display: grid;
+  gap: 12px;
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.timeline-name {
+  overflow: hidden;
+  color: #2c3b33;
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-track {
+  height: 26px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #f1f3ef;
+}
+
+.timeline-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  min-width: 3.5rem;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: var(--dog-color, var(--green));
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.timeline-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-left: calc(90px + 12px);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+/* Breed distribution */
+.breed-body {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 22px;
+  align-items: center;
+}
+
+.breed-chart {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  border-radius: 50%;
+  background: #f1f3ef;
+}
+
+/* Donut hole showing the total */
+.breed-chart::after {
+  content: attr(data-total);
+  position: absolute;
+  inset: 26%;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface);
+  color: #263a30;
+  font-family: Georgia, serif;
+  font-size: 22px;
+}
+
+.breed-legend {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+
+.breed-legend li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  color: #43544a;
+}
+
+.breed-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.breed-swatch {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.breed-count {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- */
+/* CUSTOMIZE DIALOG                                              */
+/* ------------------------------------------------------------- */
+.customize-preview {
+  display: grid;
+  place-items: center;
+}
+
+#customize-dialog .customize-preview .dog-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 24px;
+  font-size: 36px;
+}
+
+#customize-form input[type="color"] {
+  height: 42px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+#customize-form #customize-remove-photo {
+  justify-self: start;
+  min-height: 34px;
+  font-size: 12px;
+}
+
+/* ------------------------------------------------------------- */
+/* RESPONSIVE                                                    */
+/* ------------------------------------------------------------- */
+@media (max-width: 760px) {
+  #dog-overview-root {
+    gap: 18px;
+  }
+
+  #dog-overview-root .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #dog-overview-root .panel-body {
+    padding: 0 17px 20px;
+  }
+
+  .overview-split {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .timeline-row {
+    grid-template-columns: 70px 1fr;
+  }
+
+  .timeline-axis {
+    margin-left: calc(70px + 12px);
+  }
+}
+
+@media (max-width: 390px) {
+  .breed-body {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .breed-legend {
+    width: 100%;
+  }
+}
+    </style>
+    <!-- Diagnostic: if src/dog-overview.js fails to start, say so on the page -->
+    <script>
+      (function () {
+        var lastError = "";
+        window.addEventListener("error", function (e) { lastError = e.message || "script error"; });
+        window.addEventListener("unhandledrejection", function (e) {
+          lastError = (e.reason && e.reason.message) || String(e.reason);
+        });
+        window.addEventListener("load", function () {
+          setTimeout(function () {
+            if (window.__overviewReady) return;
+            var grid = document.getElementById("dog-grid");
+            if (!grid) return;
+            var box = document.createElement("p");
+            box.className = "error-panel";
+            box.textContent =
+              "src/dog-overview.js did not start. Check that it sits in src/ next to app.js and storage.js, then open the browser console for the exact error." +
+              (lastError ? " Error: " + lastError : "");
+            grid.replaceChildren(box);
+          }, 2500);
+        });
+      })();
+    </script>
+    <!-- Page script inside src/ folder -->
+    <script type="module" src="./src/dog-overview.js"></script>
   </head>
+  <!-- Document body -->
   <body>
-    <main id="dog-overview-root"></main>
+    <!-- Top-level navigation bar -->
+    <header class="app-header topbar">
+      <!-- Brand emblem and title (links back to the main journal) -->
+      <a class="brand" href="./index.html" aria-label="DogTracks home">
+        <!-- Visual monogram badge -->
+        <span class="brand-mark" aria-hidden="true">D</span>
+        <!-- Application title text -->
+        <span class="brand-name">DogTracks</span>
+      </a>
+      <!-- Top bar action buttons -->
+      <div class="topbar-actions">
+        <!-- Back to journal -->
+        <a href="./index.html" class="button button-quiet">Journal</a>
+        <!-- Auth button: triggers authentication modal or logs out -->
+        <button type="button" id="auth-btn" class="button button-quiet">
+          Sign In
+        </button>
+      </div>
+    </header>
+
+    <!-- Main landmark shell -->
+    <main class="page-shell">
+      <!-- Dynamic render mount point (populated by src/dog-overview.js) -->
+      <div id="dog-overview-root">
+
+        <!-- Page heading (same pattern as the journal's welcome row) -->
+        <div class="welcome">
+          <div>
+            <p class="eyebrow" id="overview-eyebrow">♧ THE WHOLE PACK</p>
+            <h1>Dogs Overview</h1>
+            <p class="welcome-copy">Every dog at a glance: profiles, age, breeds, and quick stats.</p>
+          </div>
+        </div>
+
+        <!-- SECTION: Quick stats summary (cards rendered by JS into .stats) -->
+        <section id="overall-stats" aria-label="Quick stats">
+          <div id="overall-stats-grid" class="stats"></div>
+        </section>
+
+        <!-- SECTION: Grid of dog cards -->
+        <section id="dog-cards" class="panel" aria-labelledby="dog-cards-title">
+          <div class="panel-heading">
+            <div>
+              <h2 id="dog-cards-title">Dog Profiles</h2>
+              <p>Quick stats per dog, plus picture and color customization</p>
+            </div>
+            <span class="count-badge" id="dog-count">0</span>
+          </div>
+          <div class="panel-body">
+            <!-- One card per dog -->
+            <div id="dog-grid" class="dog-grid">
+              <!-- Initial state before data loads -->
+              <p class="loading-state">Loading dogs…</p>
+            </div>
+          </div>
+
+          <!-- Card template cloned by JS for each dog -->
+          <template id="dog-card-template">
+            <article class="dog-card" data-dog-id="">
+              <div class="dog-card-head">
+                <!-- Profile picture (falls back to the initial on the dog's color) -->
+                <div class="dog-avatar" aria-hidden="true">
+                  <img class="dog-avatar-img" alt="" hidden />
+                  <span class="dog-avatar-initial"></span>
+                </div>
+                <!-- Identity -->
+                <div class="dog-card-body">
+                  <h3 class="dog-name"></h3>
+                  <p class="dog-breed"></p>
+                  <p class="dog-age"></p>
+                </div>
+              </div>
+              <!-- Quick stats per dog -->
+              <dl class="dog-stats">
+                <div><dt>Entries</dt><dd data-stat="sessions">0</dd></div>
+                <div><dt>Last trained</dt><dd data-stat="last-trained">—</dd></div>
+                <div><dt>Skills</dt><dd data-stat="skills">0</dd></div>
+              </dl>
+              <!-- Card actions -->
+              <div class="dog-card-actions">
+                <a class="button button-secondary" data-action="open" href="#">Open</a>
+                <button type="button" class="button button-quiet" data-action="customize">
+                  Customize
+                </button>
+              </div>
+            </article>
+          </template>
+        </section>
+
+        <!-- Timeline and breed side by side on wide screens -->
+        <div class="overview-split">
+          <!-- SECTION: Age timeline -->
+          <section id="age-timeline" class="panel" aria-labelledby="age-timeline-title">
+            <div class="panel-heading">
+              <div>
+                <h2 id="age-timeline-title">Age Timeline</h2>
+                <p>Each dog plotted from birth to today</p>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div id="timeline-chart" class="timeline-chart" role="img" aria-label="Timeline of dog ages"></div>
+            </div>
+          </section>
+
+          <!-- SECTION: Breed distribution -->
+          <section id="breed-distribution" class="panel" aria-labelledby="breed-title">
+            <div class="panel-heading">
+              <div>
+                <h2 id="breed-title">Breed Distribution</h2>
+                <p>How the pack breaks down</p>
+              </div>
+            </div>
+            <div class="panel-body breed-body">
+              <div id="breed-chart" class="breed-chart" role="img" aria-label="Breed distribution chart"></div>
+              <ul id="breed-legend" class="breed-legend"></ul>
+            </div>
+          </section>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- AUTHENTICATION (LOGIN & SIGN UP) MODAL DIALOG -->
+    <dialog id="auth-dialog" class="dialog dog-dialog" aria-labelledby="auth-modal-title">
+      <!-- Inner modal card frame -->
+      <div class="dialog-card">
+        <!-- Dialog top header -->
+        <div class="dialog-header dialog-heading">
+          <!-- Accessible dialog title -->
+          <h2 id="auth-modal-title">Account Access</h2>
+          <!-- Dismiss button -->
+          <button type="button" class="icon-button" data-close-auth aria-label="Close dialog">
+            &times;
+          </button>
+        </div>
+
+        <!-- Tab switcher to alternate between Login and Sign Up -->
+        <div class="auth-tabs" style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
+          <button type="button" id="tab-login-btn" class="button button-primary" style="flex: 1; min-height: 34px; font-size: 12px;">
+            Log In
+          </button>
+          <button type="button" id="tab-signup-btn" class="button button-quiet" style="flex: 1; min-height: 34px; font-size: 12px;">
+            Sign Up
+          </button>
+        </div>
+
+        <!-- 1. LOGIN FORM (Visible by default) -->
+        <form id="login-form" class="dialog-form" method="dialog">
+          <label>
+            Email Address
+            <input type="email" id="login-email" required placeholder="user@example.com" />
+          </label>
+
+          <label>
+            Password
+            <input type="password" id="login-password" required placeholder="••••••••" />
+          </label>
+
+          <div class="dialog-actions">
+            <button type="button" class="button button-secondary" data-close-auth>
+              Cancel
+            </button>
+            <button type="submit" class="button button-primary">
+              Log In
+            </button>
+          </div>
+        </form>
+
+        <!-- 2. SIGN UP FORM (Hidden by default, matches Users collection schema) -->
+        <form id="signup-form" class="dialog-form" method="dialog" style="display: none;">
+          <label>
+            Full Name
+            <input type="text" id="signup-name" required placeholder="e.g. Bob" />
+          </label>
+
+          <label>
+            Email Address
+            <input type="email" id="signup-email" required placeholder="dude123@gmail.com" />
+          </label>
+
+          <label>
+            Password
+            <input type="password" id="signup-password" required minlength="6" placeholder="Choose a secure password" />
+          </label>
+
+          <!-- Location coordinates for the GeoPoint Address field -->
+          <div class="form-row">
+            <label>
+              Latitude
+              <input type="number" step="any" id="signup-lat" required value="47.996753" placeholder="e.g. 47.996753" />
+            </label>
+            <label>
+              Longitude
+              <input type="number" step="any" id="signup-lng" required value="-102.563571" placeholder="e.g. -102.563571" />
+            </label>
+          </div>
+
+          <div class="dialog-actions">
+            <button type="button" class="button button-secondary" data-close-auth>
+              Cancel
+            </button>
+            <button type="submit" class="button button-primary">
+              Create Account
+            </button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
+    <!-- CUSTOMIZE DOG MODAL DIALOG (profile picture + dedicated color) -->
+    <dialog id="customize-dialog" class="dialog dog-dialog" aria-labelledby="customize-title">
+      <!-- Card frame -->
+      <div class="dialog-card">
+        <!-- Dialog header -->
+        <div class="dialog-header dialog-heading">
+          <h2 id="customize-title">Customize <span id="customize-dog-name">dog</span></h2>
+          <button type="button" class="icon-button" data-close-customize aria-label="Close dialog">
+            &times;
+          </button>
+        </div>
+
+        <!-- Form to update the dog's picture and accent color -->
+        <form id="customize-form" class="dialog-form" method="dialog">
+          <!-- Hidden id of the dog being edited -->
+          <input type="hidden" name="DogId" id="customize-dog-id" />
+
+          <!-- Live preview of avatar with chosen color -->
+          <div class="customize-preview">
+            <div class="dog-avatar" id="customize-preview-avatar" aria-hidden="true">
+              <img class="dog-avatar-img" id="customize-preview-img" alt="" hidden />
+              <span class="dog-avatar-initial" id="customize-preview-initial"></span>
+            </div>
+          </div>
+
+          <label>
+            Profile Picture
+            <input type="file" name="Photo" id="customize-photo" accept="image/*" />
+          </label>
+
+          <label>
+            Dedicated Color
+            <input type="color" name="Color" id="customize-color" value="#315f4e" />
+          </label>
+
+          <!-- Remove current picture -->
+          <button type="button" id="customize-remove-photo" class="button button-quiet">
+            Remove picture
+          </button>
+
+          <div class="dialog-actions">
+            <button type="button" class="button button-secondary" data-close-customize>
+              Cancel
+            </button>
+            <button type="submit" class="button button-primary">
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </dialog>
   </body>
 </html>
-
-<!-- 
-♧ Dogs Overview (dogs-overview.html)
-Grid of dog cards
-
-Age timeline
-
-Breed distribution
-
-Quick stats per dog
-
-Customization for Dog profile picture and dedicated color
--->

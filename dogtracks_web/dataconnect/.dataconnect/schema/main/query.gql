@@ -1,0 +1,267 @@
+extend type Query {
+  """
+  ✨ Look up a single `BehaviorLog` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  behaviorLog(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: BehaviorLog_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: BehaviorLog_FirstRow
+  ): BehaviorLog @fdc_generated(from: "BehaviorLog", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `Dog` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  dog(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Dog_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Dog_FirstRow
+  ): Dog @fdc_generated(from: "Dog", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `TrainingGoal` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  trainingGoal(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: TrainingGoal_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TrainingGoal_FirstRow
+  ): TrainingGoal @fdc_generated(from: "TrainingGoal", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `TrainingSession` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  trainingSession(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: TrainingSession_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TrainingSession_FirstRow
+  ): TrainingSession @fdc_generated(from: "TrainingSession", purpose: QUERY_SINGLE)
+  """
+  ✨ Look up a single `User` based on `id`, `key` or `first` and return selected fields (or `null` if not found).
+  """
+  user(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+  ): User @fdc_generated(from: "User", purpose: QUERY_SINGLE)
+  """
+  ✨ List `BehaviorLog` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  behaviorLogs(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: BehaviorLog_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [BehaviorLog_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: BehaviorLog_Having
+  ): [BehaviorLog!]! @fdc_generated(from: "BehaviorLog", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `Dog` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  dogs(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Dog_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Dog_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Dog_Having
+  ): [Dog!]! @fdc_generated(from: "Dog", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `TrainingGoal` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  trainingGoals(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: TrainingGoal_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [TrainingGoal_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: TrainingGoal_Having
+  ): [TrainingGoal!]! @fdc_generated(from: "TrainingGoal", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `TrainingSession` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  trainingSessions(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: TrainingSession_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [TrainingSession_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: TrainingSession_Having
+  ): [TrainingSession!]! @fdc_generated(from: "TrainingSession", purpose: QUERY_MULTIPLE)
+  """
+  ✨ List `User` objects in the table and return selected fields, optionally filtered by `where` conditions
+  """
+  users(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: User_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [User_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: User_Having
+  ): [User!]! @fdc_generated(from: "User", purpose: QUERY_MULTIPLE)
+}

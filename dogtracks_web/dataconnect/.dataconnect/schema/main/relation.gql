@@ -1,0 +1,577 @@
+extend type BehaviorLog {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "BehaviorLog", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `BehaviorLog` table.
+  """
+  _count: Int! @fdc_generated(from: "BehaviorLog.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BehaviorLog` table where the `behaviorType` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  behaviorType_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BehaviorLog.behaviorType", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BehaviorLog` table where the `dogId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  dogId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BehaviorLog.dogId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BehaviorLog` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BehaviorLog.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BehaviorLog` table where the `intensityLevel` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  intensityLevel_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BehaviorLog.intensityLevel", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BehaviorLog` table where the `notes` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  notes_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BehaviorLog.notes", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `BehaviorLog` table where the `timestamp` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  timestamp_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "BehaviorLog.timestamp", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `intensityLevel` field in the `BehaviorLog` table.
+  """
+  intensityLevel_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "BehaviorLog.intensityLevel", purpose: QUERY_SUM)
+  """
+  ✨ Average the `intensityLevel` field in the `BehaviorLog` table.
+  """
+  intensityLevel_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "BehaviorLog.intensityLevel", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `intensityLevel` field in the `BehaviorLog` table.
+  """
+  intensityLevel_min: Int @fdc_generated(from: "BehaviorLog.intensityLevel", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `timestamp` field in the `BehaviorLog` table.
+  """
+  timestamp_min: Timestamp @fdc_generated(from: "BehaviorLog.timestamp", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `intensityLevel` field in the `BehaviorLog` table.
+  """
+  intensityLevel_max: Int @fdc_generated(from: "BehaviorLog.intensityLevel", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `timestamp` field in the `BehaviorLog` table.
+  """
+  timestamp_max: Timestamp @fdc_generated(from: "BehaviorLog.timestamp", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "BehaviorLog.id", purpose: ENTITY_ID)
+}
+extend type Dog {
+  """
+  ✨ List `BehaviorLog` objects in a one-to-many relationship (where `BehaviorLog`.`dog` is this object).
+  """
+  behaviorLogs_on_dog(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: BehaviorLog_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [BehaviorLog_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: BehaviorLog_Having
+  ): [BehaviorLog!]! @fdc_generated(from: "BehaviorLog.dog", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `TrainingGoal` objects in a one-to-many relationship (where `TrainingGoal`.`dog` is this object).
+  """
+  trainingGoals_on_dog(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: TrainingGoal_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [TrainingGoal_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: TrainingGoal_Having
+  ): [TrainingGoal!]! @fdc_generated(from: "TrainingGoal.dog", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  ✨ List `TrainingSession` objects in a one-to-many relationship (where `TrainingSession`.`dog` is this object).
+  """
+  trainingSessions_on_dog(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: TrainingSession_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [TrainingSession_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: TrainingSession_Having
+  ): [TrainingSession!]! @fdc_generated(from: "TrainingSession.dog", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "Dog", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `Dog` table.
+  """
+  _count: Int! @fdc_generated(from: "Dog.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Dog` table where the `birthDate` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  birthDate_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Dog.birthDate", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Dog` table where the `breed` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  breed_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Dog.breed", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Dog` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Dog.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Dog` table where the `name` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  name_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Dog.name", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Dog` table where the `ownerId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  ownerId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Dog.ownerId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `Dog` table where the `photoUrl` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  photoUrl_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "Dog.photoUrl", purpose: QUERY_COUNT)
+  """
+  ✨ Minimum of the `birthDate` field in the `Dog` table.
+  """
+  birthDate_min: Date @fdc_generated(from: "Dog.birthDate", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `birthDate` field in the `Dog` table.
+  """
+  birthDate_max: Date @fdc_generated(from: "Dog.birthDate", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "Dog.id", purpose: ENTITY_ID)
+}
+extend type TrainingGoal {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "TrainingGoal", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `TrainingGoal` table.
+  """
+  _count: Int! @fdc_generated(from: "TrainingGoal.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingGoal` table where the `description` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  description_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingGoal.description", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingGoal` table where the `dogId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  dogId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingGoal.dogId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingGoal` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingGoal.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingGoal` table where the `status` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  status_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingGoal.status", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingGoal` table where the `targetDate` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  targetDate_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingGoal.targetDate", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingGoal` table where the `title` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  title_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingGoal.title", purpose: QUERY_COUNT)
+  """
+  ✨ Minimum of the `targetDate` field in the `TrainingGoal` table.
+  """
+  targetDate_min: Date @fdc_generated(from: "TrainingGoal.targetDate", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `targetDate` field in the `TrainingGoal` table.
+  """
+  targetDate_max: Date @fdc_generated(from: "TrainingGoal.targetDate", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "TrainingGoal.id", purpose: ENTITY_ID)
+}
+extend type TrainingSession {
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "TrainingSession", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `TrainingSession` table.
+  """
+  _count: Int! @fdc_generated(from: "TrainingSession.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingSession` table where the `date` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  date_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingSession.date", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingSession` table where the `dogId` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  dogId_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingSession.dogId", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingSession` table where the `durationMinutes` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  durationMinutes_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingSession.durationMinutes", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingSession` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingSession.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingSession` table where the `notes` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  notes_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingSession.notes", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingSession` table where the `skillFocused` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  skillFocused_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingSession.skillFocused", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `TrainingSession` table where the `successRating` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  successRating_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingSession.successRating", purpose: QUERY_COUNT)
+  """
+  ✨ Sum the `durationMinutes` field in the `TrainingSession` table.
+  """
+  durationMinutes_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "TrainingSession.durationMinutes", purpose: QUERY_SUM)
+  """
+  ✨ Sum the `successRating` field in the `TrainingSession` table.
+  """
+  successRating_sum(
+    """
+    Set to true to sum the distinct values.
+    """
+    distinct: Boolean = false
+  ): Int @fdc_generated(from: "TrainingSession.successRating", purpose: QUERY_SUM)
+  """
+  ✨ Average the `durationMinutes` field in the `TrainingSession` table.
+  """
+  durationMinutes_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "TrainingSession.durationMinutes", purpose: QUERY_AVG)
+  """
+  ✨ Average the `successRating` field in the `TrainingSession` table.
+  """
+  successRating_avg(
+    """
+    Set to true to average the distinct values.
+    """
+    distinct: Boolean = false
+  ): Float @fdc_generated(from: "TrainingSession.successRating", purpose: QUERY_AVG)
+  """
+  ✨ Minimum of the `date` field in the `TrainingSession` table.
+  """
+  date_min: Date @fdc_generated(from: "TrainingSession.date", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `durationMinutes` field in the `TrainingSession` table.
+  """
+  durationMinutes_min: Int @fdc_generated(from: "TrainingSession.durationMinutes", purpose: QUERY_MIN)
+  """
+  ✨ Minimum of the `successRating` field in the `TrainingSession` table.
+  """
+  successRating_min: Int @fdc_generated(from: "TrainingSession.successRating", purpose: QUERY_MIN)
+  """
+  ✨ Maximum of the `date` field in the `TrainingSession` table.
+  """
+  date_max: Date @fdc_generated(from: "TrainingSession.date", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `durationMinutes` field in the `TrainingSession` table.
+  """
+  durationMinutes_max: Int @fdc_generated(from: "TrainingSession.durationMinutes", purpose: QUERY_MAX)
+  """
+  ✨ Maximum of the `successRating` field in the `TrainingSession` table.
+  """
+  successRating_max: Int @fdc_generated(from: "TrainingSession.successRating", purpose: QUERY_MAX)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "TrainingSession.id", purpose: ENTITY_ID)
+}
+extend type User {
+  """
+  ✨ List `Dog` objects in a one-to-many relationship (where `Dog`.`owner` is this object).
+  """
+  dogs_on_owner(
+    """
+    Filter condition to narrow down the query results.
+    """
+    where: Dog_Filter
+
+    """
+    Order the query results by specific fields.
+    """
+    orderBy: [Dog_Order!]
+
+    """
+    Number of rows to skip before starting to return the results.
+    """
+    offset: Int
+
+    """
+    Maximum number of rows to return (defaults to 100 rows).
+    """
+    limit: Int = 100
+
+    """
+    Set to true to return distinct results.
+    """
+    distinct: Boolean = false
+
+    """
+    Filter condition to apply to the groups of aggregate queries.
+    """
+    having: Dog_Having
+  ): [Dog!]! @fdc_generated(from: "Dog.owner", purpose: QUERY_MULTIPLE_ONE_TO_MANY)
+  """
+  Implicit metadata field that cannot be written. It provides extra information about query results.
+  """
+  _metadata: _Metadata @fdc_generated(from: "User", purpose: METADATA_FIELD)
+  """
+  ✨ Count the number of rows in the `User` table.
+  """
+  _count: Int! @fdc_generated(from: "User.", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `displayName` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  displayName_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.displayName", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `email` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  email_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.email", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `id` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  id_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.id", purpose: QUERY_COUNT)
+  """
+  ✨ Count the number of rows in the `User` table where the `role` field is non-null. Pass the `distinct` argument to instead count the number of distinct values.
+  """
+  role_count(
+    """
+    Set to true to count the number of distinct values.
+    """
+    distinct: Boolean = false
+  ): Int! @fdc_generated(from: "User.role", purpose: QUERY_COUNT)
+  """
+  A generated field that is used for caching results in SDKs.
+  """
+  _id: ID! @fdc_generated(from: "User.id", purpose: ENTITY_ID)
+}

@@ -1,0 +1,562 @@
+extend type Mutation {
+  """
+  ✨ Insert a single `BehaviorLog` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  behaviorLog_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: BehaviorLog_Data!
+  ): BehaviorLog_KeyOutput! @fdc_generated(from: "BehaviorLog", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Dog` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  dog_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Dog_Data!
+  ): Dog_KeyOutput! @fdc_generated(from: "Dog", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `TrainingGoal` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  trainingGoal_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: TrainingGoal_Data!
+  ): TrainingGoal_KeyOutput! @fdc_generated(from: "TrainingGoal", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `TrainingSession` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  trainingSession_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: TrainingSession_Data!
+  ): TrainingSession_KeyOutput! @fdc_generated(from: "TrainingSession", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `User` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert `BehaviorLog` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  behaviorLog_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [BehaviorLog_Data!]!
+  ): [BehaviorLog_KeyOutput!]! @fdc_generated(from: "BehaviorLog", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Dog` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  dog_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Dog_Data!]!
+  ): [Dog_KeyOutput!]! @fdc_generated(from: "Dog", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `TrainingGoal` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  trainingGoal_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [TrainingGoal_Data!]!
+  ): [TrainingGoal_KeyOutput!]! @fdc_generated(from: "TrainingGoal", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `TrainingSession` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  trainingSession_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [TrainingSession_Data!]!
+  ): [TrainingSession_KeyOutput!]! @fdc_generated(from: "TrainingSession", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `User` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert or update a single `BehaviorLog` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `BehaviorLog`.
+  """
+  behaviorLog_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: BehaviorLog_Data!
+  ): BehaviorLog_KeyOutput! @fdc_generated(from: "BehaviorLog", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Dog` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Dog`.
+  """
+  dog_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Dog_Data!
+  ): Dog_KeyOutput! @fdc_generated(from: "Dog", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `TrainingGoal` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `TrainingGoal`.
+  """
+  trainingGoal_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: TrainingGoal_Data!
+  ): TrainingGoal_KeyOutput! @fdc_generated(from: "TrainingGoal", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `TrainingSession` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `TrainingSession`.
+  """
+  trainingSession_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: TrainingSession_Data!
+  ): TrainingSession_KeyOutput! @fdc_generated(from: "TrainingSession", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `User` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update `BehaviorLog` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `BehaviorLog`.
+  """
+  behaviorLog_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [BehaviorLog_Data!]!
+  ): [BehaviorLog_KeyOutput!]! @fdc_generated(from: "BehaviorLog", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Dog` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Dog`.
+  """
+  dog_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Dog_Data!]!
+  ): [Dog_KeyOutput!]! @fdc_generated(from: "Dog", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `TrainingGoal` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `TrainingGoal`.
+  """
+  trainingGoal_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [TrainingGoal_Data!]!
+  ): [TrainingGoal_KeyOutput!]! @fdc_generated(from: "TrainingGoal", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `TrainingSession` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `TrainingSession`.
+  """
+  trainingSession_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [TrainingSession_Data!]!
+  ): [TrainingSession_KeyOutput!]! @fdc_generated(from: "TrainingSession", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `User` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Update a single `BehaviorLog` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `BehaviorLog` or `null` if not found.
+  """
+  behaviorLog_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: BehaviorLog_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: BehaviorLog_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: BehaviorLog_Data!
+  ): BehaviorLog_KeyOutput @fdc_generated(from: "BehaviorLog", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Dog` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Dog` or `null` if not found.
+  """
+  dog_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Dog_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Dog_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Dog_Data!
+  ): Dog_KeyOutput @fdc_generated(from: "Dog", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `TrainingGoal` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `TrainingGoal` or `null` if not found.
+  """
+  trainingGoal_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: TrainingGoal_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TrainingGoal_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: TrainingGoal_Data!
+  ): TrainingGoal_KeyOutput @fdc_generated(from: "TrainingGoal", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `TrainingSession` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `TrainingSession` or `null` if not found.
+  """
+  trainingSession_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: TrainingSession_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TrainingSession_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: TrainingSession_Data!
+  ): TrainingSession_KeyOutput @fdc_generated(from: "TrainingSession", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `User` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `User` or `null` if not found.
+  """
+  user_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: User_Data!
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update `BehaviorLog` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  behaviorLog_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: BehaviorLog_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: BehaviorLog_Data!
+  ): Int! @fdc_generated(from: "BehaviorLog", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Dog` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  dog_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Dog_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Dog_Data!
+  ): Int! @fdc_generated(from: "Dog", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `TrainingGoal` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  trainingGoal_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: TrainingGoal_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: TrainingGoal_Data!
+  ): Int! @fdc_generated(from: "TrainingGoal", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `TrainingSession` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  trainingSession_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: TrainingSession_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: TrainingSession_Data!
+  ): Int! @fdc_generated(from: "TrainingSession", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `User` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  user_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: User_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: User_Data!
+  ): Int! @fdc_generated(from: "User", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Delete a single `BehaviorLog` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  behaviorLog_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: BehaviorLog_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: BehaviorLog_FirstRow
+  ): BehaviorLog_KeyOutput @fdc_generated(from: "BehaviorLog", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Dog` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  dog_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Dog_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Dog_FirstRow
+  ): Dog_KeyOutput @fdc_generated(from: "Dog", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `TrainingGoal` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  trainingGoal_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: TrainingGoal_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TrainingGoal_FirstRow
+  ): TrainingGoal_KeyOutput @fdc_generated(from: "TrainingGoal", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `TrainingSession` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  trainingSession_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: TrainingSession_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: TrainingSession_FirstRow
+  ): TrainingSession_KeyOutput @fdc_generated(from: "TrainingSession", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `User` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  user_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete `BehaviorLog` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  behaviorLog_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: BehaviorLog_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "BehaviorLog", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Dog` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  dog_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Dog_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Dog", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `TrainingGoal` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  trainingGoal_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: TrainingGoal_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingGoal", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `TrainingSession` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  trainingSession_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: TrainingSession_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "TrainingSession", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `User` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  user_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: User_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "User", purpose: DELETE_MULTIPLE)
+}
