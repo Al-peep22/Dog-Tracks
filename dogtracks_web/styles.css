@@ -1107,6 +1107,24 @@ dialog::backdrop, .dog-dialog::backdrop, .dialog::backdrop {
     font-size: 9px;
   }
 
+    /* Ensure stat cards rendered as anchor links look clean and interactive */
+  .stat-card {
+    /* Prevent default link underlining */
+    text-decoration: none;
+    /* Inherit text color from root rather than browser blue */
+    color: inherit;
+    /* Smooth transition on lift */
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  
+  /* Subtle hover lift for linked cards */
+  .stat-card:hover {
+    /* Slight upward translation on hover */
+    transform: translateY(-2px);
+    /* Raised depth shadow */
+    box-shadow: 0 6px 18px rgba(38, 58, 47, .08);
+  }
+
   /* Single-column stack on smaller screens */
   .content-grid {
     /* Single column */

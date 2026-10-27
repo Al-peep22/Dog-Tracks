@@ -10,11 +10,13 @@
     <!-- Browser window title -->
     <title>DogTracks — Dog Training Journal</title>
     <!-- Stylesheet located in root dogtracks_web folder -->
+    <!-- Stylesheet located in root folder -->
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <!-- Document body -->
   <body>
     <!-- Top-level navigation bar -->
+    <!-- Top-level navigation bar matching topbar styles -->
     <header class="app-header topbar">
       <!-- Brand emblem and title -->
       <div class="brand">
@@ -29,9 +31,15 @@
         <button type="button" id="open-dog-dialog" class="button button-primary" style="display: none; flex-direction: column; justify-content: center;">
           + Add Dog
         </button>
+<<<<<<< Updated upstream
         <!-- Auth toggle button: triggers login modal or logs out -->
         <button type="button" id="auth-btn" class="button button-quiet" style="display: flex; flex-direction: column; justify-content: center;">
           Admin Login
+=======
+        <!-- Auth button: triggers authentication modal or logs out -->
+        <button type="button" id="auth-btn" class="button button-quiet">
+          Sign In
+>>>>>>> Stashed changes
         </button>
       </div>
     </header>
@@ -42,29 +50,50 @@
       <div id="app">
         <!-- Initial prompt encouraging admin to sign in -->
         <p class="loading-state">Please log in as Admin to access DogTracks.</p>
+        <!-- Initial placeholder before app.js renders -->
+        <p class="loading-state">Loading DogTracks...</p>
       </div>
     </main>
 
     <!-- ADMIN LOGIN MODAL DIALOG -->
     <dialog id="login-dialog" class="dialog dog-dialog" aria-labelledby="login-title">
+    <!-- AUTHENTICATION (LOGIN & SIGN UP) MODAL DIALOG -->
+    <dialog id="auth-dialog" class="dialog dog-dialog" aria-labelledby="auth-modal-title">
       <!-- Inner modal card frame -->
       <div class="dialog-card">
         <!-- Dialog top header -->
         <div class="dialog-header dialog-heading">
           <!-- Accessible dialog title -->
           <h2 id="login-title">Admin Sign In</h2>
+          <h2 id="auth-modal-title">Account Access</h2>
           <!-- Dismiss button -->
           <button type="button" class="icon-button" data-close-login aria-label="Close dialog">
+          <button type="button" class="icon-button" data-close-auth aria-label="Close dialog">
             &times;
           </button>
         </div>
 
         <!-- Form targeted by app.js for Firebase Authentication -->
+        <!-- Tab switcher to alternate between Login and Sign Up -->
+        <div class="auth-tabs" style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
+          <!-- Tab button for Login -->
+          <button type="button" id="tab-login-btn" class="button button-primary" style="flex: 1; min-height: 34px; font-size: 12px;">
+            Log In
+          </button>
+          <!-- Tab button for Sign Up -->
+          <button type="button" id="tab-signup-btn" class="button button-quiet" style="flex: 1; min-height: 34px; font-size: 12px;">
+            Sign Up
+          </button>
+        </div>
+
+        <!-- 1. LOGIN FORM (Visible by default) -->
         <form id="login-form" class="dialog-form" method="dialog">
           <!-- Email field -->
           <label>
             Admin Email
             <input type="email" id="login-email" required placeholder="admin@dogtracks.com" />
+            Email Address
+            <input type="email" id="login-email" required placeholder="user@example.com" />
           </label>
 
           <!-- Password field -->
@@ -76,10 +105,54 @@
           <!-- Action buttons -->
           <div class="dialog-actions">
             <button type="button" class="button button-secondary" data-close-login>
+            <button type="button" class="button button-secondary" data-close-auth>
               Cancel
             </button>
             <button type="submit" class="button button-primary">
               Log In
+            </button>
+          </div>
+        </form>
+
+        <!-- 2. SIGN UP FORM (Hidden by default, matches Users collection schema) -->
+        <form id="signup-form" class="dialog-form" method="dialog" style="display: none;">
+          <!-- User Name field -->
+          <label>
+            Full Name
+            <input type="text" id="signup-name" required placeholder="e.g. Bob" />
+          </label>
+
+          <!-- User Email field -->
+          <label>
+            Email Address
+            <input type="email" id="signup-email" required placeholder="dude123@gmail.com" />
+          </label>
+
+          <!-- User Password field -->
+          <label>
+            Password
+            <input type="password" id="signup-password" required minlength="6" placeholder="Choose a secure password" />
+          </label>
+
+          <!-- Location coordinates for the GeoPoint Address field -->
+          <div class="form-row">
+            <label>
+              Latitude
+              <input type="number" step="any" id="signup-lat" required value="47.996753" placeholder="e.g. 47.996753" />
+            </label>
+            <label>
+              Longitude
+              <input type="number" step="any" id="signup-lng" required value="-102.563571" placeholder="e.g. -102.563571" />
+            </label>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="dialog-actions">
+            <button type="button" class="button button-secondary" data-close-auth>
+              Cancel
+            </button>
+            <button type="submit" class="button button-primary">
+              Create Account
             </button>
           </div>
         </form>
@@ -133,6 +206,7 @@
     </dialog>
 
     <!-- Path to app.js inside src/ folder -->
+    <!-- Correct relative path to app.js inside src/ -->
     <script type="module" src="./src/app.js"></script>
   </body>
 </html>

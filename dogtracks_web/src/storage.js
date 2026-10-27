@@ -1,7 +1,7 @@
 // -------------------------------------------------------------
 // FIRESTORE STORAGE MODULE
 // -------------------------------------------------------------
-// Import modular Firestore functions using browser-ready official CDN to avoid local resolution issues.
+// Import modular Firestore functions using browser-ready official CDN.
 import { 
   collection, 
   doc, 
@@ -10,40 +10,105 @@ import {
   getDocs, 
   query, 
   where, 
-  Timestamp 
+  Timestamp,
+  GeoPoint 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Helper function to safely calculate whole years elapsed from a Date or Timestamp.
 export function calculateAgeYears(birthDate) {
-  // Guard against null, undefined, or missing birth dates.
+  // Return zero if birth date is null, undefined, or missing.
   if (!birthDate) return 0;
 
-  // Convert input into a native JS Date object whether it's a Firestore Timestamp or date string.
+  // Convert to Date instance whether value is a Firestore Timestamp or date string.
   const dob = birthDate?.toDate ? birthDate.toDate() : new Date(birthDate);
 
-  // If the parsed date is invalid, safely fall back to 0.
+  // Return zero if parsing produced an invalid date.
   if (Number.isNaN(dob.getTime())) return 0;
 
-  // Calculate difference in milliseconds between today and the birth date.
+  // Calculate elapsed time in milliseconds from birth to current time.
   const diffMs = Date.now() - dob.getTime();
 
-  // Convert difference into a rough age by measuring years since the Unix epoch (1970).
+  // Convert elapsed milliseconds to a Date relative to 1970 epoch.
   const ageDate = new Date(diffMs);
 
   // Return non-negative integer years.
   return Math.max(0, Math.abs(ageDate.getUTCFullYear() - 1970));
 }
 
-// Helper function to safely extract the string ID from a document reference or string.
+// Helper function to safely extract the string document ID from a reference or string.
 export function extractId(refOrId) {
-  // Guard against missing values.
+  // Return empty string if value is null or undefined.
   if (!refOrId) return '';
-  // If it's already a string, return it directly.
+  // Return value directly if it is already a string ID.
   if (typeof refOrId === 'string') return refOrId;
-  // If it's a Firestore DocumentReference object, return its .id property.
+  // Return the id property if it is a Firestore DocumentReference.
   if (refOrId.id) return refOrId.id;
-  // Fall back to string coercion.
+  // Fallback to string coercion.
   return String(refOrId);
+}
+
+// -------------------------------------------------------------
+// FIRESTORE USER COLLECTION AUTHENTICATION & REGISTRATION
+// -------------------------------------------------------------
+// Checks the 'Users' collection for a matching Email and Password document.
+export async function authenticateDatabaseUser(db, email, password) {
+  // Query the 'Users' collection for a document where Email matches (case-sensitive check).
+  const usersQuery = query(
+    collection(db, "Users"), 
+    where("Email", "==", String(email).trim())
+  );
+
+  // Fetch the matching document snapshot.
+  const snapshot = await getDocs(usersQuery);
+
+  // If no user document with this email exists, return null.
+  if (snapshot.empty) {
+    return null;
+  }
+
+  // Find the document where the plain text Password field matches.
+  const matchingDoc = snapshot.docs.find((docSnap) => {
+    const data = docSnap.data();
+    return String(data.Password) === String(password);
+  });
+
+  // If password does not match, return null.
+  if (!matchingDoc) {
+    return null;
+  }
+
+  // Return user object containing the Firestore document ID as uid.
+  return {
+    uid: matchingDoc.id,
+    email: matchingDoc.data().Email,
+    displayName: matchingDoc.data().Name,
+    isDatabaseUser: true,
+    ...matchingDoc.data()
+  };
+}
+
+// Creates a new user record in the 'Users' collection directly matching your console schema.
+export async function createUserProfile(db, { name, email, password, latitude, longitude }) {
+  // Construct GeoPoint from latitude and longitude coordinates.
+  const addressGeoPoint = new GeoPoint(Number(latitude) || 0, Number(longitude) || 0);
+
+  // Construct user payload strictly adhering to the casing shown in your console screenshot.
+  const userPayload = {
+    Address: addressGeoPoint,
+    CreatedAt: Timestamp.now(),
+    Email: String(email).trim(),
+    Name: String(name).trim(),
+    Password: String(password),
+  };
+
+  // Insert a new document with an auto-generated ID into the 'Users' collection.
+  const docRef = await addDoc(collection(db, "Users"), userPayload);
+
+  // Return the created user object including the new document ID.
+  return {
+    uid: docRef.id,
+    ...userPayload
+  };
 }
 
 // -------------------------------------------------------------
