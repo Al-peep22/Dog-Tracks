@@ -7,7 +7,28 @@
     <script type="module" src="src/training.js"></script>
   </head>
   <body>
+    <header class="app-header topbar">
+      <!-- Brand emblem and title -->
+      <div class="brand">
+        <!-- Visual monogram badge -->
+        <span class="brand-mark" aria-hidden="true">D</span>
+        <!-- Application title text -->
+        <span class="brand-name">DogTracks</span>
+      </div>
+      <!-- Top bar action buttons -->
+      <div class="topbar-actions">
+        <!-- Add Dog modal trigger button (hidden when logged out) -->
+        <button type="button" id="open-dog-dialog" class="button button-primary" style="display: none; flex-direction: column; justify-content: center;">
+          + Add Dog
+        </button>
+        <!-- Auth toggle button: triggers login modal or logs out -->
+        <button type="button" id="auth-btn" class="button button-quiet" style="display: flex; flex-direction: column; justify-content: center;">
+          Admin Login
+        </button>
+      </div>
+    </header>
     <main id="training-root"></main>
+    <div>TEXT</div>
   </body>
 </html>
 
