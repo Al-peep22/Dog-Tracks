@@ -677,41 +677,7 @@ authBtn?.addEventListener('click', async () => {
     currentUser = null;
     localStorage.removeItem('dogtracks_db_user');
 
-<<<<<<< Updated upstream
-// Handle Login Form Submission.
-loginForm?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.querySelector('#login-email').value;
-  const password = document.querySelector('#login-password').value;
-
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    loginForm.reset();
-    loginDialog?.close();
-  } catch (error) {
-    window.alert(`Login failed: ${error.message}`);
-  }
-});
-
-// -------------------------------------------------------------
-// REAL-TIME AUTH STATE LISTENER
-// -------------------------------------------------------------
-onAuthStateChanged(auth, (user) => {
-  currentUser = user;
-
-  if (user) {
-    // Update button text and show "+ Add Dog".
-    authBtn.textContent = 'Log Out';
-    openDogDialogBtn.style.display = 'flex';
-
-    // Start listening to Firestore once authenticated.
-    subscribeToDatabase();
-  } else {
-    // Reset UI to logged out state.
-    authBtn.textContent = 'Admin Login';
-=======
     authBtn.textContent = 'Sign In';
->>>>>>> Stashed changes
     openDogDialogBtn.style.display = 'none';
 
     if (unsubscribeDogs) unsubscribeDogs();
