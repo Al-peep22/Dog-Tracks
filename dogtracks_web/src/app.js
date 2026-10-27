@@ -432,7 +432,7 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     // Update button text and show "+ Add Dog".
     authBtn.textContent = 'Log Out';
-    openDogDialogBtn.style.display = 'inline-flex';
+    openDogDialogBtn.style.display = 'flex';
 
     // Start listening to Firestore once authenticated.
     subscribeToDatabase();
