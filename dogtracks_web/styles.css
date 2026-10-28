@@ -1336,3 +1336,207 @@ dialog::backdrop, .dog-dialog::backdrop, .dialog::backdrop {
     padding: 16px;
   }
 }
+
+/* ------------------------------------------------------------- */
+/* TRAINING LOG                                                  */
+/* ------------------------------------------------------------- */
+#training-root {
+  margin-top: 38px;
+}
+
+#training-root > .training-panel {
+  padding: clamp(22px, 4vw, 38px);
+  border-color: #e4e9e2;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 92% 0, rgba(232, 240, 235, .62), transparent 34%),
+    #fff;
+  box-shadow: 0 18px 55px rgba(38, 58, 47, .08);
+}
+
+#training-root .panel-heading {
+  padding: 0 0 28px;
+}
+
+#training-root .panel-heading h1 {
+  margin-bottom: 10px;
+  font-size: clamp(36px, 5vw, 52px);
+}
+
+#training-root .welcome-copy {
+  line-height: 1.65;
+}
+
+#training-root .training-filters {
+  margin-bottom: 30px;
+  padding: 22px;
+  border: 1px solid #e8eee8;
+  border-radius: 16px;
+  background: #f8faf7;
+}
+
+#training-root .training-filters-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+#training-root .training-filters-heading h2 {
+  margin: 0 0 6px;
+  color: #2c4035;
+  font-size: 15px;
+}
+
+#training-root .training-filters-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+#training-root .training-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+#training-root .training-filter-grid > label,
+#training-root .training-date-filter label {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  color: #43544a;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+#training-root .training-search {
+  grid-column: span 2;
+}
+
+#training-root .training-filter-grid input,
+#training-root .training-filter-grid select {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid #e2e8e1;
+  border-radius: 9px;
+  background: #fff;
+  color: #34443a;
+  font-size: 12px;
+}
+
+#training-root .training-filter-grid input:focus,
+#training-root .training-filter-grid select:focus {
+  border-color: #a9c5b2;
+  outline: 3px solid rgba(91, 137, 111, .12);
+}
+
+#training-root .training-date-filter {
+  display: grid;
+  grid-column: span 2;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+#training-root .training-date-filter legend {
+  margin-bottom: 7px;
+  color: #43544a;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+#training-root .training-results .history-heading {
+  align-items: baseline;
+  margin-bottom: 14px;
+}
+
+#training-root .training-results .history-heading h2 {
+  margin: 0;
+  color: #2c4035;
+  font-size: 16px;
+}
+
+#training-root .training-results .session-list {
+  gap: 10px;
+}
+
+#training-root .training-results .session-item {
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 13px;
+  padding: 13px;
+  border: 1px solid #edf0eb;
+  border-radius: 12px;
+}
+
+#training-root .training-results .session-behavior {
+  font-size: 13px;
+}
+
+#training-root .training-results .session-context {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+#training-root .training-results .session-date {
+  font-size: 11px;
+}
+
+@media (max-width: 760px) {
+  #training-root {
+    margin-top: 24px;
+  }
+
+  #training-root > .training-panel {
+    padding: 22px;
+    border-radius: 18px;
+  }
+
+  #training-root .panel-heading {
+    padding-bottom: 22px;
+  }
+
+  #training-root .training-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  #training-root > .training-panel {
+    padding: 17px;
+  }
+
+  #training-root .training-filters {
+    padding: 16px;
+  }
+
+  #training-root .training-filter-grid,
+  #training-root .training-date-filter {
+    grid-template-columns: 1fr;
+  }
+
+  #training-root .training-search,
+  #training-root .training-date-filter {
+    grid-column: auto;
+  }
+
+  #training-root .training-filters-heading {
+    flex-direction: column;
+  }
+
+  #training-root .training-results .session-item {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  #training-root .training-results .session-date {
+    grid-column: 2;
+    white-space: normal;
+  }
+}
