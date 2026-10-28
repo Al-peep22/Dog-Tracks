@@ -221,13 +221,17 @@ export async function createSession(db, input) {
 
 // -------------------------------------------------------------
 
-export async function loadState(db) {
+export async function loadState(db, { ownerId, isAdmin = false } = {}) {
 
   // Fetch dogs
 
   const dogSnapshot = await getDocs(collection(db, "Dogs"));
 
-  const dogs = dogSnapshot.docs.map(docSnap => {
+  const dogs = dogSnapshot.docs.filter(docSnap => {
+
+    return isAdmin || (ownerId && extractId(docSnap.data().OwnerId) === ownerId);
+
+  }).map(docSnap => {
 
     const data = docSnap.data();
 
@@ -249,13 +253,19 @@ export async function loadState(db) {
 
   });
 
+  const dogIds = new Set(dogs.map(dog => dog.id));
+
 
 
   // Fetch sessions
 
   const sessionSnapshot = await getDocs(collection(db, "Sessions"));
 
-  const sessions = sessionSnapshot.docs.map(docSnap => {
+  const sessions = sessionSnapshot.docs.filter(docSnap => {
+
+    return dogIds.has(extractId(docSnap.data().DogId));
+
+  }).map(docSnap => {
 
     const data = docSnap.data();
 

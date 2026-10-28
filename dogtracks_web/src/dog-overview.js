@@ -106,10 +106,12 @@ function isAdmin() {
   return checkIsAdmin(currentUser?.email);
 }
 
-// Every dog in the database (the overview is a shared, read-only roster)
+// Regular users see their own dogs; admins can see the full roster.
 function visibleDogs() {
   if (!currentUser) return [];
-  return [...rawDogs].sort((a, b) => String(a.Name || "").localeCompare(String(b.Name || "")));
+  return rawDogs
+    .filter((dog) => isAdmin() || extractId(dog.OwnerId) === currentUser.uid)
+    .sort((a, b) => String(a.Name || "").localeCompare(String(b.Name || "")));
 }
 
 // Only admins and a dog's owner may open it in the journal or customize it
@@ -189,7 +191,7 @@ function renderOverallStats(dogs) {
 
   // [icon glyph, label, value] rendered with the journal's .stat-card
   const tiles = [
-    ["♧", "All dogs in database", dogs.length],
+    ["♧", isAdmin() ? "All dogs in database" : "Your dogs", dogs.length],
     ["◔", "Average age", avg === null ? "—" : formatAge(avg)],
     ["✓", "Training entries", sessions],
     ["✦", "Breeds", breeds],

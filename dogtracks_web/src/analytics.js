@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { loadState } from "./storage.js";
 
 // Firebase config
@@ -12,24 +13,27 @@ const firebaseConfig = {
 // Init Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+
+const ADMIN_EMAILS = ["dogtracksadmin@dogtracks.com", "admin@dogtracks.com"];
+
+function isAdmin(user) {
+  return ADMIN_EMAILS.some(
+    (email) => email.toLowerCase() === String(user?.email || "").trim().toLowerCase()
+  );
+}
 
 // DOM references
 const analyticsRoot = document.querySelector('#analytics-root');
+const dashboardPanel = analyticsRoot.querySelector('.panel');
 const dogToggleList = document.querySelector('#dog-toggle-list');
 const timelineCanvas = document.querySelector('#timeline-chart');
 const behaviorCanvas = document.querySelector('#behavior-chart');
 const heatmapCanvas = document.querySelector('#heatmap-chart');
 
-// Load Firestore state
+// Keep dashboard contents hidden until the active user is known.
+dashboardPanel.hidden = true;
 let state;
-
-try {
-  state = await loadState(db);
-  console.log("Loaded Firebase state:", state);
-} catch (error) {
-  analyticsRoot.innerHTML = `<p class="error-panel">Could not load analytics: ${error.message}</p>`;
-  throw error;
-}
 
 // ---------------------------------------------
 // Basic color palette for dogs
@@ -51,14 +55,7 @@ let dogVisibility = new Map();
 let timelineChart;
 let behaviorChart;
 let heatmapChart;
-
-// ---------------------------------------------
-// Initialize dog color + visibility maps
-// ---------------------------------------------
-state.dogs.forEach((dog, index) => {
-  dogColors.set(dog.id, baseColors[index % baseColors.length]);
-  dogVisibility.set(dog.id, true);
-});
+let loadGeneration = 0;
 
 // ---------------------------------------------
 // Build dog toggle + color UI
@@ -268,5 +265,75 @@ function updateCharts() {
 // ---------------------------------------------
 // Initial render
 // ---------------------------------------------
-renderDogControls();
-createCharts();
+function destroyCharts() {
+  loadGeneration += 1;
+  timelineChart?.destroy();
+  behaviorChart?.destroy();
+  heatmapChart?.destroy();
+  timelineChart = undefined;
+  behaviorChart = undefined;
+  heatmapChart = undefined;
+}
+
+function showNotice(message, className = 'loading-state') {
+  let notice = document.querySelector('#analytics-notice');
+  if (!notice) {
+    notice = document.createElement('p');
+    notice.id = 'analytics-notice';
+    analyticsRoot.prepend(notice);
+  }
+  notice.className = className;
+  notice.textContent = message;
+  dashboardPanel.hidden = true;
+}
+
+async function initializeAnalytics(user) {
+  destroyCharts();
+  const generation = loadGeneration;
+  document.querySelector('#analytics-notice')?.remove();
+
+  try {
+    state = await loadState(db, { ownerId: user.uid, isAdmin: isAdmin(user) });
+  } catch (error) {
+    if (generation !== loadGeneration) return;
+    console.error("Could not load analytics:", error);
+    showNotice(`Could not load analytics: ${error.message}`, 'error-panel');
+    return;
+  }
+  if (generation !== loadGeneration) return;
+
+  dogColors = new Map();
+  dogVisibility = new Map();
+  state.dogs.forEach((dog, index) => {
+    dogColors.set(dog.id, baseColors[index % baseColors.length]);
+    dogVisibility.set(dog.id, true);
+  });
+
+  renderDogControls();
+  createCharts();
+  dashboardPanel.hidden = false;
+}
+
+onAuthStateChanged(auth, (firebaseUser) => {
+  if (firebaseUser) {
+    localStorage.removeItem('dogtracks_db_user');
+    void initializeAnalytics(firebaseUser);
+    return;
+  }
+
+  const savedUser = localStorage.getItem('dogtracks_db_user');
+  if (savedUser) {
+    try {
+      const databaseUser = JSON.parse(savedUser);
+      if (!databaseUser?.uid) throw new Error('Saved user is missing an ID.');
+      void initializeAnalytics(databaseUser);
+      return;
+    } catch (error) {
+      console.error("Could not restore the saved user:", error);
+      localStorage.removeItem('dogtracks_db_user');
+    }
+  }
+
+  destroyCharts();
+  showNotice('Please sign in on the home page to view your analytics.');
+});
