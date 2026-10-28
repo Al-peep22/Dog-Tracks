@@ -189,7 +189,11 @@ function createCharts() {
       },
       scales: {
         x: { title: { display: true, text: 'Date' } },
-        y: { title: { display: true, text: 'Entries' }, beginAtZero: true },
+        y: {
+          title: { display: true, text: 'Entries' },
+          beginAtZero: true,
+          ticks: { precision: 0, stepSize: 1 },
+        },
       },
     },
   });
@@ -212,7 +216,11 @@ function createCharts() {
       },
       scales: {
         x: { title: { display: true, text: 'Behavior' } },
-        y: { title: { display: true, text: 'Entries' }, beginAtZero: true },
+        y: {
+          title: { display: true, text: 'Entries' },
+          beginAtZero: true,
+          ticks: { precision: 0, stepSize: 1 },
+        },
       },
     },
   });
@@ -235,7 +243,11 @@ function createCharts() {
       },
       scales: {
         x: { title: { display: true, text: 'Day of week' } },
-        y: { title: { display: true, text: 'Entries' }, beginAtZero: true },
+        y: {
+          title: { display: true, text: 'Entries' },
+          beginAtZero: true,
+          ticks: { precision: 0, stepSize: 1 },
+        },
       },
     },
   });
