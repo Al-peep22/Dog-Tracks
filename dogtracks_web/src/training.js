@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { loadState } from "./storage.js";
 
 const firebaseConfig = {
@@ -10,12 +11,78 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 const trainingRoot = document.querySelector("#training-root");
 
+const ADMIN_EMAILS = ["dogtracksadmin@dogtracks.com", "admin@dogtracks.com"];
+
+function isAdmin(user) {
+  return ADMIN_EMAILS.some(
+    (email) => email.toLowerCase() === String(user?.email || "").trim().toLowerCase()
+  );
+}
+
+function getCurrentUser() {
+  return new Promise((resolve, reject) => {
+    onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        localStorage.removeItem("dogtracks_db_user");
+        resolve(firebaseUser);
+        return;
+      }
+
+      const savedUser = localStorage.getItem("dogtracks_db_user");
+      if (savedUser) {
+        try {
+          const databaseUser = JSON.parse(savedUser);
+          if (!databaseUser?.uid) throw new Error("Saved user is missing an ID.");
+          resolve(databaseUser);
+          return;
+        } catch (error) {
+          console.error("Could not restore the saved user:", error);
+          localStorage.removeItem("dogtracks_db_user");
+        }
+      }
+
+      resolve(null);
+    }, reject);
+  });
+}
+
+let currentUser;
+try {
+  currentUser = await getCurrentUser();
+} catch (error) {
+  console.error("Could not determine the signed-in user:", error);
+  const errorMessage = document.createElement("p");
+  errorMessage.className = "error-panel";
+  errorMessage.textContent = `Could not check your sign-in status: ${error.message}`;
+  trainingRoot.replaceChildren(errorMessage);
+  throw error;
+}
+
+if (!currentUser) {
+  const signInMessage = document.createElement("section");
+  signInMessage.className = "panel training-panel";
+  signInMessage.innerHTML = `
+    <div class="panel-heading">
+      <div>
+        <p class="eyebrow">TRAINING JOURNAL</p>
+        <h1>Training log</h1>
+        <p class="welcome-copy">Sign in on the home page to view your training sessions.</p>
+      </div>
+    </div>
+    <a class="button button-primary" href="index.html">Go to sign in</a>
+  `;
+  trainingRoot.replaceChildren(signInMessage);
+} else {
 let state;
 
 try {
-  state = await loadState(db);
+  state = await loadState(db, {
+    ownerId: currentUser.uid,
+    isAdmin: isAdmin(currentUser),
+  });
 } catch (error) {
   trainingRoot.innerHTML = "";
   const errorMessage = document.createElement("p");
@@ -256,3 +323,4 @@ controls.querySelector("[data-clear-filters]").addEventListener("click", () => {
 });
 
 renderSessions();
+}
