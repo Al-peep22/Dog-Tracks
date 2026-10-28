@@ -26,7 +26,7 @@
       <!-- Top bar action buttons -->
       <div class="topbar-actions">
         <!-- Add Dog modal trigger button (hidden when logged out) -->
-        <button type="button" id="open-dog-dialog" class="button button-primary" style="display: none; flex-direction: column; justify-content: center;"">
+        <button type="button" id="open-dog-dialog" class="button button-primary" style="display: none; flex-direction: column; justify-content: center;">
           + Add Dog
         </button>
         <!-- Auth button: triggers authentication modal or logs out -->
@@ -155,21 +155,40 @@
 
         <!-- Form to add new dog document -->
         <form id="dog-form" class="dialog-form" method="dialog">
+          <!-- Dog Name input field matching schema 'Name' -->
           <label>
             Dog's Name
             <input type="text" name="Name" required maxlength="50" placeholder="e.g. Bailey" />
           </label>
 
+          <!-- Dog Breed input field matching schema 'Breed' -->
           <label>
             Breed
             <input type="text" name="Breed" maxlength="50" placeholder="e.g. Labrador Retriever" />
           </label>
 
+          <!-- Two-column row for Color and Profile Photo -->
+          <div class="form-row">
+            <!-- Hex Color Picker input field matching schema 'Color' -->
+            <label>
+              Profile Theme Color
+              <input type="color" name="Color" value="#315f4e" style="height: 39px; padding: 2px 4px; cursor: pointer;" />
+            </label>
+
+            <!-- File Upload Input converted to string data URL matching schema 'PhotoDataUrl' -->
+            <label>
+              Profile Photo
+              <input type="file" name="PhotoFile" accept="image/*" style="font-size: 11px; padding: 6px 8px;" />
+            </label>
+          </div>
+
+          <!-- Dog Date of Birth input field matching schema 'DateOfBirth' -->
           <label>
             Date of Birth
             <input type="date" name="DateOfBirth" required />
           </label>
 
+          <!-- Dog Profile Notes textarea matching schema 'Notes' -->
           <label>
             Profile Notes
             <textarea name="Notes" maxlength="300" placeholder="Favorite cues, triggers, or personality traits..."></textarea>

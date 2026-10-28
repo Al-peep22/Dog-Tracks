@@ -114,7 +114,7 @@ export async function createUserProfile(db, { name, email, password, latitude, l
 // -------------------------------------------------------------
 // DOG PROFILE CRUD
 // -------------------------------------------------------------
-// Create a new dog record conforming to the strict schema.
+// Create a new dog record conforming to the strict schema (including Color and PhotoDataUrl).
 export async function createDog(db, input, ownerId = null) {
   // Validate and trim the dog's name (required field).
   const name = String(input?.Name ?? input?.name ?? '').trim();
@@ -143,10 +143,18 @@ export async function createDog(db, input, ownerId = null) {
   // Create DocumentReference for the Owner if provided, otherwise null.
   const ownerRef = ownerId ? doc(db, "Users", ownerId) : null;
 
+  // Extract Color hex string or default to standard brand green.
+  const colorHex = String(input?.Color ?? input?.color ?? '#315f4e').trim();
+
+  // Extract PhotoDataUrl data string if present.
+  const photoDataUrl = String(input?.PhotoDataUrl ?? input?.photoDataUrl ?? '').trim();
+
   // Construct document payload strictly adhering to schema casing and types.
   const dogPayload = {
     Name: name,
     Breed: String(input?.Breed ?? input?.breed ?? '').trim(),
+    Color: colorHex,                          // Hex color string (Named Color)
+    PhotoDataUrl: photoDataUrl,                // Base64 data string (Named PhotoDataUrl)
     DateOfBirth: dateOfBirthTimestamp,
     Notes: String(input?.Notes ?? input?.notes ?? '').trim(),
     OwnerId: ownerRef,
@@ -216,9 +224,7 @@ export async function createSession(db, input) {
 }
 
 // -------------------------------------------------------------
-
 // LOAD ALL DATA FROM FIRESTORE (Dogs + Sessions)
-
 // -------------------------------------------------------------
 
 export async function loadState(db, { ownerId, isAdmin = false } = {}) {
@@ -234,23 +240,16 @@ export async function loadState(db, { ownerId, isAdmin = false } = {}) {
   }).map(docSnap => {
 
     const data = docSnap.data();
-
     return {
-
       id: docSnap.id,
-
       name: data.Name,
-
       breed: data.Breed,
-
+      color: data.Color || '#315f4e',
+      photoDataUrl: data.PhotoDataUrl || '',
       notes: data.Notes,
-
-      dateOfBirth: data.DateOfBirth.toDate().toISOString(),
-
+      dateOfBirth: data.DateOfBirth?.toDate ? data.DateOfBirth.toDate().toISOString() : '',
       ageYears: calculateAgeYears(data.DateOfBirth),
-
     };
-
   });
 
   const dogIds = new Set(dogs.map(dog => dog.id));
@@ -268,27 +267,15 @@ export async function loadState(db, { ownerId, isAdmin = false } = {}) {
   }).map(docSnap => {
 
     const data = docSnap.data();
-
     return {
-
       id: docSnap.id,
-
       dogId: extractId(data.DogId),
-
       behavior: data.Behavior,
-
       trigger: data.Trigger,
-
       notes: data.Notes,
-
-      occurredAt: data.OccurredAt.toDate().toISOString(),
-
+      occurredAt: data.OccurredAt?.toDate ? data.OccurredAt.toDate().toISOString() : '',
     };
-
   });
 
-
-
   return { dogs, sessions };
-
 }
