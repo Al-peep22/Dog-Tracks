@@ -122,6 +122,21 @@ function escapeHtml(value) {
   })[character]);
 }
 
+// Convert an uploaded file into a base64 Data URL string via native FileReader.
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    // If no file was selected, return an empty string.
+    if (!file) {
+      resolve('');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
 // Convert Firestore Timestamps or standard date representations into localized date strings.
 function relativeDate(value) {
   const date = value?.toDate ? value.toDate() : new Date(value);
@@ -198,7 +213,6 @@ function buildAdminPanel() {
 // -------------------------------------------------------------
 // DEDICATED LOGIN & SIGN UP PAGE RENDERER
 // -------------------------------------------------------------
-// Generates the on-page authentication interface when no user is signed in.
 function renderAuthPage() {
   if (!root) return;
 
@@ -285,35 +299,27 @@ function renderAuthPage() {
     renderAuthPage();
   });
 
-  // DUAL-MODE LOGIN SUBMISSION: Checks Firebase Auth (Admin), then Users collection (Regular users).
+  // Dual-mode login submission.
   document.querySelector('#page-login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.querySelector('#page-login-email').value.trim();
     const password = document.querySelector('#page-login-password').value;
 
     try {
-      // 1. Try Firebase Authentication first (for Admin).
       await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged will handle the rest if successful!
     } catch (authError) {
-      // 2. If Firebase Auth fails, check the Firestore 'Users' collection directly.
       try {
         const dbUser = await authenticateDatabaseUser(db, email, password);
 
         if (dbUser) {
-          // Manually set currentUser to the matched database user record.
           currentUser = dbUser;
-          // Store user session in localStorage so refreshing preserves session.
           localStorage.setItem('dogtracks_db_user', JSON.stringify(dbUser));
-          // Update navigation UI.
           authBtn.textContent = 'Log Out';
           openDogDialogBtn.style.display = 'inline-flex';
-          // Start syncing Firestore data.
           subscribeToDatabase();
           return;
         }
 
-        // If neither matched, show error to user.
         window.alert("Invalid email or password. Please check your credentials.");
       } catch (dbError) {
         console.error("Database user check failed:", dbError);
@@ -322,7 +328,7 @@ function renderAuthPage() {
     }
   });
 
-  // SIGN UP SUBMISSION: Creates new document directly in 'Users' collection.
+  // Sign up submission.
   document.querySelector('#page-signup-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.querySelector('#page-signup-name').value;
@@ -332,7 +338,6 @@ function renderAuthPage() {
     const longitude = document.querySelector('#page-signup-lng').value;
 
     try {
-      // Create user document in the 'Users' collection.
       const newDbUser = await createUserProfile(db, {
         name,
         email,
@@ -341,7 +346,6 @@ function renderAuthPage() {
         longitude
       });
 
-      // Automatically log the new user in.
       currentUser = newDbUser;
       localStorage.setItem('dogtracks_db_user', JSON.stringify(newDbUser));
 
@@ -363,7 +367,6 @@ function renderAuthPage() {
 function render() {
   if (!root) return;
 
-  // If there is no authenticated user session, present the on-page login interface.
   if (!currentUser) {
     renderAuthPage();
     return;
@@ -394,7 +397,7 @@ function render() {
   const activeDogAge = dog ? calculateAgeYears(dog.DateOfBirth) : 0;
   const isAdmin = checkIsAdmin(currentUser.email);
 
-  // Render dashboard containing the admin inspector toolbar and linked stat cards.
+  // Render dashboard containing the admin inspector toolbar, linked stat cards, and dog color/photo display.
   root.innerHTML = `
     <!-- ADMIN DATA INSPECTOR (Rendered only for administrator) -->
     ${buildAdminPanel()}
@@ -452,11 +455,21 @@ function render() {
                   .map((item) => {
                     const itemAge = calculateAgeYears(item.DateOfBirth);
                     const initial = (item.Name ? item.Name.charAt(0) : '?').toUpperCase();
+                    const itemColor = item.Color || '#315f4e';
+
                     return `
                       <button class="dog-item" type="button"
                         data-select-dog="${escapeHtml(item.id)}"
-                        aria-pressed="${dog?.id === item.id}">
-                        <span class="dog-avatar" aria-hidden="true">${escapeHtml(initial)}</span>
+                        aria-pressed="${dog?.id === item.id}"
+                        style="border-left: 4px solid ${escapeHtml(itemColor)};">
+                        <!-- Avatar renders uploaded photo or color-styled initial -->
+                        <span class="dog-avatar" aria-hidden="true" style="overflow: hidden; background: ${escapeHtml(itemColor)}22; color: ${escapeHtml(itemColor)};">
+                          ${
+                            item.PhotoDataUrl
+                              ? `<img src="${escapeHtml(item.PhotoDataUrl)}" alt="" style="width: 100%; height: 100%; object-fit: cover;" />`
+                              : escapeHtml(initial)
+                          }
+                        </span>
                         <span class="dog-summary">
                           <span class="dog-name">${escapeHtml(item.Name || 'Unnamed')}</span>
                           <span class="dog-meta">
@@ -480,12 +493,28 @@ function render() {
           ? `
       <article class="panel detail-panel" aria-labelledby="selected-dog-name">
         <div class="detail-top">
-          <span class="detail-avatar" aria-hidden="true">
-            ${escapeHtml((dog.Name ? dog.Name.charAt(0) : '?').toUpperCase())}
+          <!-- Detail avatar renders photo or large themed initial -->
+          <span class="detail-avatar" aria-hidden="true" style="overflow: hidden; background: ${escapeHtml(dog.Color || '#315f4e')}22; color: ${escapeHtml(dog.Color || '#315f4e')};">
+            ${
+              dog.PhotoDataUrl
+                ? `<img src="${escapeHtml(dog.PhotoDataUrl)}" alt="" style="width: 100%; height: 100%; object-fit: cover;" />`
+                : escapeHtml((dog.Name ? dog.Name.charAt(0) : '?').toUpperCase())
+            }
           </span>
           <div class="detail-title">
             <h2 id="selected-dog-name">${escapeHtml(dog.Name || 'Unnamed')}</h2>
-            <p>${escapeHtml(dog.Breed || 'Breed not specified')} · ${activeDogAge} ${activeDogAge === 1 ? 'year' : 'years'} old</p>
+            <p style="display: flex; align-items: center; gap: 8px;">
+              <span>${escapeHtml(dog.Breed || 'Breed not specified')} · ${activeDogAge} ${activeDogAge === 1 ? 'year' : 'years'} old</span>
+              <!-- Visual color dot pill indicator -->
+              ${
+                dog.Color
+                  ? `<span style="display: inline-flex; align-items: center; gap: 4px; font-size: 10px; background: #f0f1ed; padding: 2px 6px; border-radius: 4px;">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: ${escapeHtml(dog.Color)}; display: inline-block;"></span>
+                      ${escapeHtml(dog.Color)}
+                    </span>`
+                  : ''
+              }
+            </p>
           </div>
           <button class="icon-button" type="button"
             data-delete-dog="${escapeHtml(dog.id)}"
@@ -618,6 +647,8 @@ async function injectTestData() {
     const dogDocRef = await createDog(db, {
       Name: "Bailey (Admin Seed)",
       Breed: "Golden Retriever",
+      Color: "#b77a34",
+      PhotoDataUrl: "",
       DateOfBirth: twoYearsAgo.toISOString().split('T')[0],
       Notes: "Injected by Admin toolbar"
     }, currentUser?.uid);
@@ -645,17 +676,33 @@ closeDogDialogButtons.forEach((btn) => btn.addEventListener('click', () => dogDi
 
 dogDialog?.addEventListener('click', (e) => { if (e.target === dogDialog) dogDialog.close(); });
 
-// Handle new dog profile creation form submission.
+// Handle new dog profile creation form submission with Color and PhotoDataUrl support.
 dogForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
-  const values = Object.fromEntries(new FormData(dogForm));
+
+  const formData = new FormData(dogForm);
+  const name = formData.get('Name');
+  const breed = formData.get('Breed');
+  const color = formData.get('Color') || '#315f4e';
+  const dateOfBirth = formData.get('DateOfBirth');
+  const notes = formData.get('Notes');
+  const photoFile = formData.get('PhotoFile');
 
   try {
+    // Convert chosen image file to base64 Data URL string via native reader.
+    let photoDataUrl = '';
+    if (photoFile && photoFile.size > 0) {
+      photoDataUrl = await readFileAsDataUrl(photoFile);
+    }
+
+    // Persist to Firestore with Color and PhotoDataUrl properties.
     const docRef = await createDog(db, {
-      Name: values.Name,
-      Breed: values.Breed,
-      DateOfBirth: values.DateOfBirth,
-      Notes: values.Notes
+      Name: name,
+      Breed: breed,
+      Color: color,
+      PhotoDataUrl: photoDataUrl,
+      DateOfBirth: dateOfBirth,
+      Notes: notes
     }, currentUser?.uid);
 
     selectedDogId = docRef.id;
@@ -669,11 +716,9 @@ dogForm?.addEventListener('submit', async (event) => {
 // Top bar sign in / sign out toggle action.
 authBtn?.addEventListener('click', async () => {
   if (currentUser) {
-    // If it was a Firebase Auth user, sign out from Firebase.
     if (!currentUser.isDatabaseUser) {
       await signOut(auth);
     }
-    // Clear manual database user session.
     currentUser = null;
     localStorage.removeItem('dogtracks_db_user');
 
@@ -699,7 +744,6 @@ authBtn?.addEventListener('click', async () => {
 // -------------------------------------------------------------
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    // Admin or Firebase Auth user detected.
     currentUser = user;
     localStorage.removeItem('dogtracks_db_user');
 
@@ -707,7 +751,6 @@ onAuthStateChanged(auth, (user) => {
     openDogDialogBtn.style.display = 'inline-flex';
     subscribeToDatabase();
   } else if (!currentUser || !currentUser.isDatabaseUser) {
-    // Check if there is an active database user session in localStorage.
     const savedDbUser = localStorage.getItem('dogtracks_db_user');
     if (savedDbUser) {
       try {
@@ -721,7 +764,6 @@ onAuthStateChanged(auth, (user) => {
       }
     }
 
-    // Otherwise, clear state and show login.
     authBtn.textContent = 'Sign In';
     openDogDialogBtn.style.display = 'none';
 
