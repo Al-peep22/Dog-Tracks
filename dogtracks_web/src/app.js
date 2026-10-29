@@ -7,11 +7,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 // Cloud Firestore database access and real-time snapshot listeners from official CDN.
 import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Firebase Authentication methods from official CDN (used for the Admin).
+// Firebase Authentication methods including account deletion.
 import { 
   getAuth, 
   signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
   signOut, 
+  deleteUser,
   onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
@@ -20,7 +23,8 @@ import {
   createDog, 
   createSession, 
   deleteDog, 
-  createUserProfile,
+  deleteUserAccount,
+  ensureUserProfileCreated,
   authenticateDatabaseUser,
   calculateAgeYears, 
   extractId 
@@ -109,7 +113,7 @@ let state = {
 let selectedDogId = null;
 
 // -------------------------------------------------------------
-// UTILITY FUNCTIONS
+// UTILITY FUNCTIONS & VALIDATORS
 // -------------------------------------------------------------
 // Sanitize raw text to prevent Cross-Site Scripting (XSS).
 function escapeHtml(value) {
@@ -122,10 +126,15 @@ function escapeHtml(value) {
   })[character]);
 }
 
+// Strict email format validation.
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(String(email).trim());
+}
+
 // Convert an uploaded file into a base64 Data URL string via native FileReader.
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
-    // If no file was selected, return an empty string.
     if (!file) {
       resolve('');
       return;
@@ -160,10 +169,23 @@ function showError(message) {
     </section>`;
 }
 
+// Helper to lock the Date input max attribute to today's date format (YYYY-MM-DD).
+function lockDateInputsToToday() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+
+  const dobInputs = document.querySelectorAll('input[name="DateOfBirth"], #dog-dob-input');
+  dobInputs.forEach((input) => {
+    input.setAttribute('max', todayStr);
+  });
+}
+
 // -------------------------------------------------------------
 // ADMIN INSPECTION BAR COMPONENT
 // -------------------------------------------------------------
-// Renders the raw Firestore data inspector for authorized administrators.
 function buildAdminPanel() {
   if (!checkIsAdmin(currentUser?.email)) return '';
 
@@ -182,11 +204,10 @@ function buildAdminPanel() {
       </div>
 
       <p style="font-size: 12px; color: var(--muted); margin: 0 0 12px;">
-        Signed in as <strong>${escapeHtml(currentUser.email)}</strong>. You have unrestricted access to all <strong>${rawAllDogs.length}</strong> dogs and <strong>${rawAllSessions.length}</strong> sessions across all users.
+        You have unrestricted access to all <strong>${rawAllDogs.length}</strong> dogs and <strong>${rawAllSessions.length}</strong> sessions across all users.
       </p>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 11px;">
-        <!-- ALL DOGS IN FIRESTORE -->
         <div style="background: white; border: 1px solid #e8eae4; border-radius: 8px; padding: 12px; max-height: 220px; overflow-y: auto;">
           <strong>All Dogs in Firestore (${rawAllDogs.length})</strong>
           ${
@@ -196,7 +217,6 @@ function buildAdminPanel() {
           }
         </div>
 
-        <!-- ALL SESSIONS IN FIRESTORE -->
         <div style="background: white; border: 1px solid #e8eae4; border-radius: 8px; padding: 12px; max-height: 220px; overflow-y: auto;">
           <strong>All Sessions in Firestore (${rawAllSessions.length})</strong>
           ${
@@ -225,7 +245,6 @@ function renderAuthPage() {
           <p style="color: var(--muted); font-size: 13px; margin: 0;">Sign in to view dogs and training records</p>
         </div>
 
-        <!-- Authentication Tab Buttons -->
         <div style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--line); padding-bottom: 10px;">
           <button type="button" id="auth-tab-login" class="button ${activeAuthTab === 'login' ? 'button-primary' : 'button-quiet'}" style="flex: 1; min-height: 36px; font-size: 12px;">
             Log In
@@ -235,7 +254,6 @@ function renderAuthPage() {
           </button>
         </div>
 
-        <!-- 1. LOGIN FORM -->
         <form id="page-login-form" style="display: ${activeAuthTab === 'login' ? 'grid' : 'none'}; gap: 14px;">
           <label>
             Email Address
@@ -252,7 +270,6 @@ function renderAuthPage() {
           </button>
         </form>
 
-        <!-- 2. SIGN UP FORM -->
         <form id="page-signup-form" style="display: ${activeAuthTab === 'signup' ? 'grid' : 'none'}; gap: 14px;">
           <label>
             Full Name
@@ -261,34 +278,22 @@ function renderAuthPage() {
 
           <label>
             Email Address
-            <input type="email" id="page-signup-email" required placeholder="dude123@gmail.com" autocomplete="email" />
+            <input type="email" id="page-signup-email" required placeholder="user@example.com" autocomplete="email" />
           </label>
 
           <label>
             Password
-            <input type="password" id="page-signup-password" required minlength="4" placeholder="Enter password" autocomplete="new-password" />
+            <input type="password" id="page-signup-password" required minlength="6" placeholder="At least 6 characters" autocomplete="new-password" />
           </label>
 
-          <div class="form-row">
-            <label>
-              Latitude
-              <input type="number" step="any" id="page-signup-lat" required value="47.996753" placeholder="e.g. 47.996753" />
-            </label>
-            <label>
-              Longitude
-              <input type="number" step="any" id="page-signup-lng" required value="-102.563571" placeholder="e.g. -102.563571" />
-            </label>
-          </div>
-
           <button type="submit" class="button button-primary" style="margin-top: 6px; width: 100%;">
-            Create Account
+            Create Account &amp; Send Verification
           </button>
         </form>
       </section>
     </div>
   `;
 
-  // Attach tab switcher listeners.
   document.querySelector('#auth-tab-login')?.addEventListener('click', () => {
     activeAuthTab = 'login';
     renderAuthPage();
@@ -299,15 +304,45 @@ function renderAuthPage() {
     renderAuthPage();
   });
 
-  // Dual-mode login submission.
   document.querySelector('#page-login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.querySelector('#page-login-email').value.trim();
     const password = document.querySelector('#page-login-password').value;
 
+    if (!isValidEmail(email)) {
+      window.alert("Invalid Email: Please enter a valid email address (e.g. name@example.com).");
+      return;
+    }
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      if (!user.emailVerified && !checkIsAdmin(user.email)) {
+        await signOut(auth);
+        window.alert("Please verify your email address before logging in. Check your inbox for the verification link.");
+        return;
+      }
+
+      const pendingDataKey = `pending_signup_${email.toLowerCase()}`;
+      const savedPending = localStorage.getItem(pendingDataKey);
+      let signupInfo = { name: email.split('@')[0], email, password };
+
+      if (savedPending) {
+        try {
+          signupInfo = JSON.parse(savedPending);
+        } catch (_) {}
+      }
+
+      await ensureUserProfileCreated(db, user.uid, signupInfo);
+      localStorage.removeItem(pendingDataKey);
+
     } catch (authError) {
+      if (authError.code === 'auth/invalid-email') {
+        window.alert("Invalid Email: The email address is badly formatted.");
+        return;
+      }
+
       try {
         const dbUser = await authenticateDatabaseUser(db, email, password);
 
@@ -328,35 +363,45 @@ function renderAuthPage() {
     }
   });
 
-  // Sign up submission.
   document.querySelector('#page-signup-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = document.querySelector('#page-signup-name').value;
-    const email = document.querySelector('#page-signup-email').value;
+    const name = document.querySelector('#page-signup-name').value.trim();
+    const email = document.querySelector('#page-signup-email').value.trim();
     const password = document.querySelector('#page-signup-password').value;
-    const latitude = document.querySelector('#page-signup-lat').value;
-    const longitude = document.querySelector('#page-signup-lng').value;
+
+    if (!isValidEmail(email)) {
+      window.alert("Invalid Email: Please provide a valid email address (e.g. name@example.com).");
+      return;
+    }
 
     try {
-      const newDbUser = await createUserProfile(db, {
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = credential.user;
+
+      await sendEmailVerification(user);
+
+      localStorage.setItem(`pending_signup_${email.toLowerCase()}`, JSON.stringify({
         name,
         email,
-        password,
-        latitude,
-        longitude
-      });
+        password
+      }));
 
-      currentUser = newDbUser;
-      localStorage.setItem('dogtracks_db_user', JSON.stringify(newDbUser));
+      await signOut(auth);
 
-      authBtn.textContent = 'Log Out';
-      openDogDialogBtn.style.display = 'inline-flex';
-      subscribeToDatabase();
+      window.alert(
+        `Verification email sent to ${email}!\n\nPlease check your inbox and click the verification link before logging in.`
+      );
 
-      window.alert(`Account created successfully! Welcome, ${name}.`);
+      activeAuthTab = 'login';
+      renderAuthPage();
     } catch (error) {
-      console.error("Sign up error:", error);
-      window.alert(`Sign up failed: ${error.message}`);
+      if (error.code === 'auth/invalid-email') {
+        window.alert("Invalid Email: Please check the spelling of your email address.");
+      } else if (error.code === 'auth/email-already-in-use') {
+        window.alert("An account already exists with this email address. Please log in instead.");
+      } else {
+        window.alert(`Sign up failed: ${error.message}`);
+      }
     }
   });
 }
@@ -372,11 +417,9 @@ function render() {
     return;
   }
 
-  // Active dog resolution.
   const dog = selectedDog();
   selectedDogId = dog ? dog.id : null;
 
-  // Filter training sessions for the active dog.
   const sessions = dog
     ? state.sessions
         .filter((session) => extractId(session.DogId) === dog.id)
@@ -397,20 +440,16 @@ function render() {
   const activeDogAge = dog ? calculateAgeYears(dog.DateOfBirth) : 0;
   const isAdmin = checkIsAdmin(currentUser.email);
 
-  // Render dashboard containing the admin inspector toolbar, linked stat cards, and dog color/photo display.
   root.innerHTML = `
-    <!-- ADMIN DATA INSPECTOR (Rendered only for administrator) -->
     ${buildAdminPanel()}
 
     <section class="welcome">
       <div>
-        <p class="eyebrow">${isAdmin ? '★ ADMINISTRATOR' : 'LOGGED IN AS'}: ${escapeHtml(currentUser.email)}</p>
         <h1>Small steps, stronger bonds.</h1>
         <p class="welcome-copy">A little consistency goes a long way. Here's your training progress so far.</p>
       </div>
     </section>
 
-    <!-- STATS OVERVIEW SECTION WITH NAVIGATION HYPERLINKS -->
     <section class="stats" aria-label="Training overview">
       <a href="dogs-overview.html" class="stat-card" style="text-decoration: none; color: inherit;">
         <span class="stat-icon" aria-hidden="true">♧</span>
@@ -438,7 +477,6 @@ function render() {
     </section>
 
     <section class="content-grid">
-      <!-- DOG LIST PANEL -->
       <article class="panel" aria-labelledby="dogs-heading">
         <div class="panel-heading">
           <div>
@@ -462,7 +500,6 @@ function render() {
                         data-select-dog="${escapeHtml(item.id)}"
                         aria-pressed="${dog?.id === item.id}"
                         style="border-left: 4px solid ${escapeHtml(itemColor)};">
-                        <!-- Avatar renders uploaded photo or color-styled initial -->
                         <span class="dog-avatar" aria-hidden="true" style="overflow: hidden; background: ${escapeHtml(itemColor)}22; color: ${escapeHtml(itemColor)};">
                           ${
                             item.PhotoDataUrl
@@ -487,13 +524,11 @@ function render() {
         }
       </article>
 
-      <!-- DOG DETAIL PANEL -->
       ${
         dog
           ? `
       <article class="panel detail-panel" aria-labelledby="selected-dog-name">
         <div class="detail-top">
-          <!-- Detail avatar renders photo or large themed initial -->
           <span class="detail-avatar" aria-hidden="true" style="overflow: hidden; background: ${escapeHtml(dog.Color || '#315f4e')}22; color: ${escapeHtml(dog.Color || '#315f4e')};">
             ${
               dog.PhotoDataUrl
@@ -505,7 +540,6 @@ function render() {
             <h2 id="selected-dog-name">${escapeHtml(dog.Name || 'Unnamed')}</h2>
             <p style="display: flex; align-items: center; gap: 8px;">
               <span>${escapeHtml(dog.Breed || 'Breed not specified')} · ${activeDogAge} ${activeDogAge === 1 ? 'year' : 'years'} old</span>
-              <!-- Visual color dot pill indicator -->
               ${
                 dog.Color
                   ? `<span style="display: inline-flex; align-items: center; gap: 4px; font-size: 10px; background: #f0f1ed; padding: 2px 6px; border-radius: 4px;">
@@ -516,15 +550,15 @@ function render() {
               }
             </p>
           </div>
-          <button class="icon-button" type="button"
-            data-delete-dog="${escapeHtml(dog.id)}"
-            aria-label="Delete profile"
-            title="Delete profile">×</button>
+          <button type="button" class="button" data-delete-dog="${escapeHtml(dog.id)}"
+            style="background: #fff; color: #b73a3a; border: 1px solid #f1c5c5; font-size: 11px; padding: 0 12px; display: inline-flex; align-items: center; gap: 5px; height: 34px;"
+            title="Delete ${escapeHtml(dog.Name)} profile">
+            <span aria-hidden="true">🗑</span> Delete Dog
+          </button>
         </div>
 
         ${dog.Notes ? `<p class="profile-notes">${escapeHtml(dog.Notes)}</p>` : ''}
 
-        <!-- SESSION FORM -->
         <form class="session-form" id="session-form">
           <h3>Log a training entry</h3>
           <label>Behavior or activity
@@ -545,7 +579,6 @@ function render() {
           </button>
         </form>
 
-        <!-- SESSION HISTORY -->
         <section class="history" aria-label="${escapeHtml(dog.Name)} training history">
           <h3 class="history-heading">
             Recent activity <span>${sessions.length} ${sessions.length === 1 ? 'entry' : 'entries'}</span>
@@ -585,9 +618,20 @@ function render() {
       </article>`
       }
     </section>
+
+    <!-- ACCOUNT SETTINGS & DANGER ZONE SECTION -->
+    <section class="panel" style="margin-top: 32px; border-top: 2px solid #f1f2ec; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h3 style="margin: 0 0 4px; font-size: 14px; color: #b73a3a;">Account Settings</h3>
+        <p style="margin: 0; font-size: 12px; color: var(--muted);">Permanently delete your user profile, all registered dogs, and training journals.</p>
+      </div>
+      <button type="button" id="delete-account-btn" class="button"
+        style="background: #fff; color: #b73a3a; border: 1px solid #f1c5c5; font-size: 12px; padding: 0 16px; height: 36px; display: inline-flex; align-items: center; gap: 6px;">
+        <span aria-hidden="true">⚠️</span> Delete Account
+      </button>
+    </section>
   `;
 
-  // Attach click handlers to switch active dog selection.
   root.querySelectorAll('[data-select-dog]').forEach((button) => {
     button.addEventListener('click', () => {
       selectedDogId = button.dataset.selectDog;
@@ -595,14 +639,10 @@ function render() {
     });
   });
 
-  // Attach session submission handler.
   root.querySelector('#session-form')?.addEventListener('submit', onSessionSubmit);
-
-  // Attach dog deletion handler.
   root.querySelector('[data-delete-dog]')?.addEventListener('click', onDeleteDog);
-
-  // Attach admin injection button handler.
   root.querySelector('#admin-seed-btn')?.addEventListener('click', injectTestData);
+  root.querySelector('#delete-account-btn')?.addEventListener('click', onDeleteAccount);
 }
 
 // -------------------------------------------------------------
@@ -628,7 +668,13 @@ async function onSessionSubmit(event) {
 
 async function onDeleteDog() {
   const dog = selectedDog();
-  if (!dog || !window.confirm(`Delete ${dog.Name} and training entries?`)) return;
+  if (!dog) return;
+
+  const confirmed = window.confirm(
+    `Are you sure you want to delete ${dog.Name}?\n\nThis will permanently remove their profile and all logged training entries. This action cannot be undone.`
+  );
+
+  if (!confirmed) return;
 
   try {
     await deleteDog(db, dog.id);
@@ -638,7 +684,76 @@ async function onDeleteDog() {
   }
 }
 
-// Admin helper to inject a test dog profile and session to test writes.
+// Handler for permanent account deletion with confirmation checks.
+async function onDeleteAccount() {
+  if (!currentUser) return;
+
+  const confirmStep1 = window.confirm(
+    "Are you sure you want to permanently delete your account?\n\nAll of your dog profiles and training logs will be irreversibly erased."
+  );
+  if (!confirmStep1) return;
+
+  const typedConfirmation = window.prompt('To confirm deletion, please type "DELETE" into the box below:');
+  if (!typedConfirmation || typedConfirmation.trim().toUpperCase() !== "DELETE") {
+    window.alert("Account deletion canceled. The typed confirmation did not match.");
+    return;
+  }
+
+  try {
+    const targetUserId = currentUser.uid;
+    const isDbUser = Boolean(currentUser.isDatabaseUser);
+
+    // 1. Delete Firestore records FIRST (dogs, sessions, and profile document)
+    await deleteUserAccount(db, targetUserId);
+
+    // 2. Clean up local state and listeners before deleting Auth user
+    if (unsubscribeDogs) {
+      unsubscribeDogs();
+      unsubscribeDogs = null;
+    }
+    if (unsubscribeSessions) {
+      unsubscribeSessions();
+      unsubscribeSessions = null;
+    }
+
+    localStorage.removeItem('dogtracks_db_user');
+    localStorage.removeItem(`pending_signup_${(currentUser.email || '').toLowerCase()}`);
+    rawAllDogs = [];
+    rawAllSessions = [];
+    state = { dogs: [], sessions: [] };
+    selectedDogId = null;
+
+    // 3. If signed in through Firebase Auth, delete the Auth user
+    if (!isDbUser && auth.currentUser) {
+      const authUser = auth.currentUser;
+      try {
+        await deleteUser(authUser);
+      } catch (authErr) {
+        if (authErr.code === 'auth/requires-recent-login') {
+          await signOut(auth);
+          currentUser = null;
+          window.alert("Your database records were cleared, but deleting your login requires a recent sign-in. Please log in once more and click Delete Account again to finish.");
+          render();
+          return;
+        }
+        throw authErr;
+      }
+    } else {
+      await signOut(auth).catch(() => {});
+    }
+
+    currentUser = null;
+    authBtn.textContent = 'Sign In';
+    if (openDogDialogBtn) openDogDialogBtn.style.display = 'none';
+
+    window.alert("Your account and all associated records have been permanently deleted.");
+    render();
+  } catch (error) {
+    console.error("Account deletion error:", error);
+    window.alert(`Could not delete account: ${error.message}`);
+  }
+}
+
 async function injectTestData() {
   try {
     const twoYearsAgo = new Date();
@@ -671,12 +786,14 @@ async function injectTestData() {
 // -------------------------------------------------------------
 // STATIC LISTENERS (Dialogs & Forms)
 // -------------------------------------------------------------
-openDogDialogBtn?.addEventListener('click', () => dogDialog?.showModal());
+openDogDialogBtn?.addEventListener('click', () => {
+  lockDateInputsToToday();
+  dogDialog?.showModal();
+});
 closeDogDialogButtons.forEach((btn) => btn.addEventListener('click', () => dogDialog?.close()));
 
 dogDialog?.addEventListener('click', (e) => { if (e.target === dogDialog) dogDialog.close(); });
 
-// Handle new dog profile creation form submission with Color and PhotoDataUrl support.
 dogForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
 
@@ -688,14 +805,27 @@ dogForm?.addEventListener('submit', async (event) => {
   const notes = formData.get('Notes');
   const photoFile = formData.get('PhotoFile');
 
+  if (!dateOfBirth) {
+    window.alert("Invalid Date: Please choose a valid date of birth.");
+    return;
+  }
+
+  const [year, month, day] = dateOfBirth.split('-').map(Number);
+  const selectedDate = new Date(year, month - 1, day);
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+
+  if (selectedDate.getTime() > endOfToday.getTime()) {
+    window.alert("Invalid Date: Date of birth cannot be in the future.");
+    return;
+  }
+
   try {
-    // Convert chosen image file to base64 Data URL string via native reader.
     let photoDataUrl = '';
     if (photoFile && photoFile.size > 0) {
       photoDataUrl = await readFileAsDataUrl(photoFile);
     }
 
-    // Persist to Firestore with Color and PhotoDataUrl properties.
     const docRef = await createDog(db, {
       Name: name,
       Breed: breed,
@@ -713,7 +843,6 @@ dogForm?.addEventListener('submit', async (event) => {
   }
 });
 
-// Top bar sign in / sign out toggle action.
 authBtn?.addEventListener('click', async () => {
   if (currentUser) {
     if (!currentUser.isDatabaseUser) {
@@ -740,10 +869,28 @@ authBtn?.addEventListener('click', async () => {
 });
 
 // -------------------------------------------------------------
-// REAL-TIME AUTH STATE LISTENER (Firebase Auth for Admin)
+// REAL-TIME AUTH STATE LISTENER
 // -------------------------------------------------------------
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
+    if (!user.emailVerified && !checkIsAdmin(user.email)) {
+      signOut(auth);
+      return;
+    }
+
+    const pendingDataKey = `pending_signup_${user.email.toLowerCase()}`;
+    const savedPending = localStorage.getItem(pendingDataKey);
+    let signupInfo = { name: user.email.split('@')[0], email: user.email, password: '' };
+
+    if (savedPending) {
+      try {
+        signupInfo = JSON.parse(savedPending);
+      } catch (_) {}
+    }
+
+    await ensureUserProfileCreated(db, user.uid, signupInfo);
+    localStorage.removeItem(pendingDataKey);
+
     currentUser = user;
     localStorage.removeItem('dogtracks_db_user');
 
@@ -778,7 +925,6 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// Subscribe to database collections according to role.
 function subscribeToDatabase() {
   const isAdmin = checkIsAdmin(currentUser?.email);
 
@@ -790,8 +936,6 @@ function subscribeToDatabase() {
         ...docSnap.data()
       }));
 
-      // If user is Admin: view ALL dogs in the database.
-      // If user is a regular user: filter dogs where OwnerId matches their document ID.
       state.dogs = isAdmin 
         ? rawAllDogs 
         : rawAllDogs.filter((d) => {
@@ -823,4 +967,5 @@ function subscribeToDatabase() {
 }
 
 // Initial invocation.
+lockDateInputsToToday();
 render();

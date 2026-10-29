@@ -96,7 +96,7 @@
           </div>
         </form>
 
-        <!-- 2. SIGN UP FORM (Hidden by default, matches Users collection schema) -->
+        <!-- 2. SIGN UP FORM (Latitude and Longitude removed) -->
         <form id="signup-form" class="dialog-form" method="dialog" style="display: none;">
           <!-- User Name field -->
           <label>
@@ -113,20 +113,8 @@
           <!-- User Password field -->
           <label>
             Password
-            <input type="password" id="signup-password" required minlength="6" placeholder="Choose a secure password" />
+            <input type="password" id="signup-password" required minlength="6" placeholder="Choose a secure password (min 6 characters)" />
           </label>
-
-          <!-- Location coordinates for the GeoPoint Address field -->
-          <div class="form-row">
-            <label>
-              Latitude
-              <input type="number" step="any" id="signup-lat" required value="47.996753" placeholder="e.g. 47.996753" />
-            </label>
-            <label>
-              Longitude
-              <input type="number" step="any" id="signup-lng" required value="-102.563571" placeholder="e.g. -102.563571" />
-            </label>
-          </div>
 
           <!-- Action buttons -->
           <div class="dialog-actions">
@@ -182,10 +170,10 @@
             </label>
           </div>
 
-          <!-- Dog Date of Birth input field matching schema 'DateOfBirth' -->
+          <!-- Dog Date of Birth input field locked to today max to prevent future dates -->
           <label>
             Date of Birth
-            <input type="date" name="DateOfBirth" required />
+            <input type="date" name="DateOfBirth" id="dog-dob-input" required />
           </label>
 
           <!-- Dog Profile Notes textarea matching schema 'Notes' -->
