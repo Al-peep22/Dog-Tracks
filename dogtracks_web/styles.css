@@ -1468,11 +1468,83 @@ dialog::backdrop, .dog-dialog::backdrop, .dialog::backdrop {
 }
 
 #training-root .training-results .session-item {
-  grid-template-columns: 34px minmax(0, 1fr) auto;
-  gap: 13px;
-  padding: 13px;
+  display: block;
+  overflow: hidden;
   border: 1px solid #edf0eb;
   border-radius: 12px;
+  background: #fafbf8;
+}
+
+#training-root .training-results .session-open-button {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 13px;
+  align-items: center;
+  width: 100%;
+  padding: 13px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+#training-root .training-results .session-open-button:focus-visible {
+  outline: 3px solid rgba(91, 137, 111, .4);
+  outline-offset: -3px;
+}
+
+#training-root .training-results .session-metadata {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#training-root .training-results .session-open-icon {
+  color: #71814f;
+  font-size: 24px;
+  line-height: 1;
+}
+
+#training-root .session-dialog {
+  background: transparent;
+}
+
+#training-root .session-dialog-card {
+  gap: 13px;
+  max-height: min(80vh, 640px);
+  overflow-y: auto;
+}
+
+#training-root .session-dialog-card .dialog-header {
+  align-items: center;
+  margin: 0;
+}
+
+#training-root .session-dialog-dog,
+#training-root .session-dialog-date,
+#training-root .session-dialog-field p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+#training-root .session-dialog-date {
+  font-size: 12px;
+}
+
+#training-root .session-dialog-field {
+  display: grid;
+  gap: 5px;
+  padding-top: 12px;
+  border-top: 1px solid #edf0eb;
+}
+
+#training-root .session-dialog-field h3 {
+  margin: 0;
+  color: #34443a;
+  font-size: 12px;
 }
 
 #training-root .training-results .session-behavior {
@@ -1531,12 +1603,17 @@ dialog::backdrop, .dog-dialog::backdrop, .dialog::backdrop {
     flex-direction: column;
   }
 
-  #training-root .training-results .session-item {
+  #training-root .training-results .session-open-button {
     grid-template-columns: 32px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  #training-root .training-results .session-metadata {
+    grid-column: 2;
+    justify-content: space-between;
   }
 
   #training-root .training-results .session-date {
-    grid-column: 2;
     white-space: normal;
   }
 }
