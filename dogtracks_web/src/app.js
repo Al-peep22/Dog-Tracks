@@ -95,6 +95,7 @@ let state = {
 };
 
 let selectedDogId = null;
+let selectedDogId = new URLSearchParams(window.location.search).get("dog");
 
 // -------------------------------------------------------------
 // UTILITY FUNCTIONS & VALIDATORS
@@ -420,14 +421,30 @@ function render() {
     : [];
 
   const sessionCount = state.sessions.length;
+  const isAdmin = checkIsAdmin(currentUser.email);
+  const accountDogIds = new Set(
+    rawAllDogs
+      .filter((accountDog) => extractId(accountDog.OwnerId) === currentUser.uid)
+      .map((accountDog) => accountDog.id)
+  );
+  const accountSessions = state.sessions.filter((session) =>
+    accountDogIds.has(extractId(session.DogId))
+  );
+  const dashboardSessions = isAdmin ? state.sessions : accountSessions;
+  const sessionCount = dashboardSessions.length;
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const recentCount = state.sessions.filter((s) => {
+  const recentCount = dashboardSessions.filter((s) => {
     const time = s.OccurredAt?.toMillis ? s.OccurredAt.toMillis() : new Date(s.OccurredAt).getTime();
     return time >= sevenDaysAgo;
   }).length;
 
+<<<<<<< HEAD
   const activeDogAge = dog ? calculateAgeYears(dog.DateOfBirth, dog.DateOfDeath) : 0;
   const isAdmin = checkIsAdmin(currentUser.email);
+=======
+  const activeDogAge = dog ? calculateAgeYears(dog.DateOfBirth) : 0;
+>>>>>>> 64f2445cf980c82ba58e2e004c62a1c657dfdfd0
 
   root.innerHTML = `
     ${buildAdminPanel()}
