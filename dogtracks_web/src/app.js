@@ -393,9 +393,9 @@ function render() {
         })
     : [];
 
-  const sessionCount = sessions.length;
+  const sessionCount = state.sessions.length;
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const recentCount = sessions.filter((s) => {
+  const recentCount = state.sessions.filter((s) => {
     const time = s.OccurredAt?.toMillis ? s.OccurredAt.toMillis() : new Date(s.OccurredAt).getTime();
     return time >= sevenDaysAgo;
   }).length;
