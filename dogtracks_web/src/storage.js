@@ -7,6 +7,7 @@ import {
   doc, 
   setDoc,
   getDoc,
+  updateDoc,
   addDoc, 
   deleteDoc, 
   getDocs, 
@@ -16,12 +17,17 @@ import {
   GeoPoint 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Helper function to safely calculate whole years elapsed from a Date or Timestamp.
-export function calculateAgeYears(birthDate) {
+// Helper function to safely calculate whole years elapsed from birth to passing or current time.
+export function calculateAgeYears(birthDate, deathDate = null) {
   if (!birthDate) return 0;
   const dob = birthDate?.toDate ? birthDate.toDate() : new Date(birthDate);
   if (Number.isNaN(dob.getTime())) return 0;
-  const diffMs = Date.now() - dob.getTime();
+
+  const endDate = deathDate
+    ? (deathDate?.toDate ? deathDate.toDate() : new Date(deathDate))
+    : new Date();
+
+  const diffMs = endDate.getTime() - dob.getTime();
   if (diffMs < 0) return 0;
   const ageDate = new Date(diffMs);
   return Math.max(0, Math.abs(ageDate.getUTCFullYear() - 1970));
@@ -35,10 +41,17 @@ export function extractId(refOrId) {
   return String(refOrId);
 }
 
+// Determines if a dog profile is archived based on presence and validity of DateOfDeath.
+export function isDogArchived(dog) {
+  if (!dog || !dog.DateOfDeath) return false;
+  const dod = dog.DateOfDeath?.toDate ? dog.DateOfDeath.toDate() : new Date(dog.DateOfDeath);
+  if (Number.isNaN(dod.getTime())) return false;
+  return dod.getTime() <= Date.now();
+}
+
 // -------------------------------------------------------------
 // FIRESTORE USER COLLECTION AUTHENTICATION & REGISTRATION
 // -------------------------------------------------------------
-// Checks the 'Users' collection for a matching Email and Password document.
 export async function authenticateDatabaseUser(db, email, password) {
   const usersQuery = query(
     collection(db, "Users"), 
@@ -64,7 +77,6 @@ export async function authenticateDatabaseUser(db, email, password) {
   };
 }
 
-// Checks if a Firestore user document exists by UID; if not, creates it after email verification.
 export async function ensureUserProfileCreated(db, userId, { name, email, password }) {
   const userRef = doc(db, "Users", userId);
   const snap = await getDoc(userRef);
@@ -85,13 +97,11 @@ export async function ensureUserProfileCreated(db, userId, { name, email, passwo
   return { uid: snap.id, ...snap.data() };
 }
 
-// Cascades deletion of all dogs, sessions, and profile data belonging to a user.
 export async function deleteUserAccount(db, userId, userEmail = null, knownDogIds = []) {
   if (!userId && !userEmail) throw new Error('Missing user ID for account deletion.');
 
   const dogIdsToDelete = new Set(knownDogIds);
 
-  // 1. Try to find any other dogs owned by this user
   try {
     const dogsSnapshot = await getDocs(collection(db, "Dogs"));
     dogsSnapshot.docs.forEach((docSnap) => {
@@ -105,7 +115,6 @@ export async function deleteUserAccount(db, userId, userEmail = null, knownDogId
     console.warn("[DeleteAccount] Could not scan Dogs collection; using known dog IDs:", err);
   }
 
-  // 2. Cascade delete all identified dogs and their sessions
   for (const dogId of dogIdsToDelete) {
     try {
       await deleteDog(db, dogId);
@@ -114,7 +123,6 @@ export async function deleteUserAccount(db, userId, userEmail = null, knownDogId
     }
   }
 
-  // 3. Delete the user document directly by UID
   if (userId) {
     try {
       await deleteDoc(doc(db, "Users", userId));
@@ -123,7 +131,6 @@ export async function deleteUserAccount(db, userId, userEmail = null, knownDogId
     }
   }
 
-  // 4. If email is provided, also try to delete any document matched by Email
   if (userEmail) {
     try {
       const emailQuery = query(collection(db, "Users"), where("Email", "==", String(userEmail).trim()));
@@ -150,8 +157,8 @@ export async function createDog(db, input, ownerId = null) {
     throw new Error('Please select a valid date of birth.');
   }
 
-  const [year, month, day] = input.DateOfBirth.split('-').map(Number);
-  const dobDate = new Date(year, month - 1, day);
+  const [bYear, bMonth, bDay] = input.DateOfBirth.split('-').map(Number);
+  const dobDate = new Date(bYear, bMonth - 1, bDay);
 
   if (Number.isNaN(dobDate.getTime())) {
     throw new Error('Please select a valid date of birth.');
@@ -162,6 +169,23 @@ export async function createDog(db, input, ownerId = null) {
 
   if (dobDate.getTime() > endOfToday.getTime()) {
     throw new Error('Invalid Date: Date of birth cannot be in the future.');
+  }
+
+  let dodTimestamp = null;
+  if (input?.DateOfDeath) {
+    const [dYear, dMonth, dDay] = input.DateOfDeath.split('-').map(Number);
+    const dodDate = new Date(dYear, dMonth - 1, dDay);
+
+    if (Number.isNaN(dodDate.getTime())) {
+      throw new Error('Please select a valid date of passing.');
+    }
+    if (dodDate.getTime() < dobDate.getTime()) {
+      throw new Error('Date of passing cannot be earlier than date of birth.');
+    }
+    if (dodDate.getTime() > endOfToday.getTime()) {
+      throw new Error('Date of passing cannot be in the future.');
+    }
+    dodTimestamp = Timestamp.fromDate(dodDate);
   }
 
   const dateOfBirthTimestamp = Timestamp.fromDate(dobDate);
@@ -175,11 +199,43 @@ export async function createDog(db, input, ownerId = null) {
     Color: colorHex,
     PhotoDataUrl: photoDataUrl,
     DateOfBirth: dateOfBirthTimestamp,
+    DateOfDeath: dodTimestamp,
     Notes: String(input?.Notes ?? input?.notes ?? '').trim(),
     OwnerId: ownerRef,
   };
 
   return await addDoc(collection(db, "Dogs"), dogPayload);
+}
+
+// Update a dog's DateOfDeath to transition the profile into Memorial Archives.
+export async function updateDogDeathDate(db, dogId, dateOfDeathStr, dobDateVal) {
+  if (!dogId) throw new Error('Missing dog ID.');
+  if (!dateOfDeathStr) throw new Error('Please specify a date.');
+
+  const [dYear, dMonth, dDay] = dateOfDeathStr.split('-').map(Number);
+  const dodDate = new Date(dYear, dMonth - 1, dDay);
+
+  if (Number.isNaN(dodDate.getTime())) {
+    throw new Error('Invalid date provided.');
+  }
+
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+  if (dodDate.getTime() > endOfToday.getTime()) {
+    throw new Error('Date of passing cannot be in the future.');
+  }
+
+  if (dobDateVal) {
+    const dob = dobDateVal?.toDate ? dobDateVal.toDate() : new Date(dobDateVal);
+    if (!Number.isNaN(dob.getTime()) && dodDate.getTime() < dob.getTime()) {
+      throw new Error('Date of passing cannot precede date of birth.');
+    }
+  }
+
+  const dogRef = doc(db, "Dogs", dogId);
+  await updateDoc(dogRef, {
+    DateOfDeath: Timestamp.fromDate(dodDate)
+  });
 }
 
 export async function deleteDog(db, dogId) {
@@ -240,7 +296,8 @@ export async function loadState(db, { ownerId, isAdmin = false } = {}) {
       photoDataUrl: data.PhotoDataUrl || '',
       notes: data.Notes,
       dateOfBirth: data.DateOfBirth?.toDate ? data.DateOfBirth.toDate().toISOString() : '',
-      ageYears: calculateAgeYears(data.DateOfBirth),
+      dateOfDeath: data.DateOfDeath?.toDate ? data.DateOfDeath.toDate().toISOString() : null,
+      ageYears: calculateAgeYears(data.DateOfBirth, data.DateOfDeath),
     };
   });
 

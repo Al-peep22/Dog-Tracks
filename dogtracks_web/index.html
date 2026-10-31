@@ -94,11 +94,20 @@
             </label>
           </div>
 
-          <!-- Dog Date of Birth input field locked to today max to prevent future dates -->
-          <label>
-            Date of Birth
-            <input type="date" name="DateOfBirth" id="dog-dob-input" required />
-          </label>
+          <!-- Two-column row for Date of Birth and Date of Passing -->
+          <div class="form-row">
+            <!-- Dog Date of Birth input field locked to today max to prevent future dates -->
+            <label>
+              Date of Birth
+              <input type="date" name="DateOfBirth" id="dog-dob-input" required />
+            </label>
+
+            <!-- Optional Dog Date of Death -->
+            <label>
+              Date of Passing (Optional)
+              <input type="date" name="DateOfDeath" id="dog-dod-input" />
+            </label>
+          </div>
 
           <!-- Dog Profile Notes textarea matching schema 'Notes' -->
           <label>
@@ -113,6 +122,29 @@
             <button type="submit" class="button button-primary">
               Save Dog Profile
             </button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
+    <!-- SET DATE OF PASSING (MEMORIAL ARCHIVE) DIALOG -->
+    <dialog id="archive-dog-dialog" class="dialog dog-dialog" aria-labelledby="archive-dialog-title">
+      <div class="dialog-card">
+        <div class="dialog-header dialog-heading">
+          <h2 id="archive-dialog-title">Mark as Passed / Archive Profile</h2>
+          <button type="button" class="icon-button" data-close-archive aria-label="Close dialog">&times;</button>
+        </div>
+        <form id="archive-dog-form" class="dialog-form" method="dialog">
+          <p style="font-size: 13px; color: var(--muted); margin: 0 0 12px; line-height: 1.5;">
+            Recording a date of passing moves this profile into your <strong>Memorial Archives</strong>. Historical training sessions remain safely preserved in read-only mode.
+          </p>
+          <label>
+            Date of Passing
+            <input type="date" id="archive-dod-input" name="DateOfDeath" required />
+          </label>
+          <div class="dialog-actions">
+            <button type="button" class="button button-secondary" data-close-archive>Cancel</button>
+            <button type="submit" class="button" style="background: #4a5568; color: #fff;">Archive Profile</button>
           </div>
         </form>
       </div>

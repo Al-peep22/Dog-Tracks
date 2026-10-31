@@ -17,6 +17,8 @@ import {
   createDog, 
   createSession, 
   deleteDog, 
+  updateDogDeathDate,
+  isDogArchived,
   deleteUserAccount,
   ensureUserProfileCreated,
   authenticateDatabaseUser,
@@ -62,17 +64,25 @@ function checkIsAdmin(email) {
 const root = document.querySelector('#app');
 const dogDialog = document.querySelector('#dog-dialog');
 const dogForm = document.querySelector('#dog-form');
-
-// Trigger button used to open the add dog dialog.
 const openDogDialogBtn = document.querySelector('#open-dog-dialog');
 const closeDogDialogButtons = document.querySelectorAll('[data-close-dialog]');
 const authBtn = document.querySelector('#auth-btn');
+
+const archiveDialog = document.querySelector('#archive-dog-dialog');
+const archiveForm = document.querySelector('#archive-dog-form');
+const closeArchiveButtons = document.querySelectorAll('[data-close-archive]');
+
+const deleteAccountDialog = document.querySelector('#delete-account-dialog');
+const deleteAccountInput = document.querySelector('#delete-account-confirm-input');
+const confirmDeleteAccountBtn = document.querySelector('#confirm-delete-account-btn');
+const closeDeleteAccountButtons = document.querySelectorAll('[data-close-delete-account]');
 
 // -------------------------------------------------------------
 // IN-MEMORY APPLICATION STATE
 // -------------------------------------------------------------
 let currentUser = null;
 let activeAuthTab = 'login';
+let activeDogViewTab = 'active'; // 'active' or 'archived'
 let unsubscribeDogs = null;
 let unsubscribeSessions = null;
 
@@ -144,8 +154,8 @@ function lockDateInputsToToday() {
   const day = String(now.getDate()).padStart(2, '0');
   const todayStr = `${year}-${month}-${day}`;
 
-  const dobInputs = document.querySelectorAll('input[name="DateOfBirth"], #dog-dob-input');
-  dobInputs.forEach((input) => {
+  const inputs = document.querySelectorAll('input[type="date"]');
+  inputs.forEach((input) => {
     input.setAttribute('max', todayStr);
   });
 }
@@ -212,7 +222,6 @@ function renderAuthPage() {
           <p style="color: var(--muted); font-size: 13px; margin: 0;">Sign in to view dogs and training records</p>
         </div>
 
-        <!-- Authentication Tab Buttons -->
         <div style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--line); padding-bottom: 10px;">
           <button type="button" id="auth-tab-login" class="button ${activeAuthTab === 'login' ? 'button-primary' : 'button-quiet'}" style="flex: 1; min-height: 36px; font-size: 12px;">
             Log In
@@ -222,7 +231,6 @@ function renderAuthPage() {
           </button>
         </div>
 
-        <!-- 1. LOGIN FORM -->
         <form id="page-login-form" style="display: ${activeAuthTab === 'login' ? 'grid' : 'none'}; gap: 14px;">
           <label>
             Email Address
@@ -239,7 +247,6 @@ function renderAuthPage() {
           </button>
         </form>
 
-        <!-- 2. SIGN UP FORM -->
         <form id="page-signup-form" style="display: ${activeAuthTab === 'signup' ? 'grid' : 'none'}; gap: 14px;">
           <label>
             Full Name
@@ -280,7 +287,7 @@ function renderAuthPage() {
     const password = document.querySelector('#page-login-password').value;
 
     if (!isValidEmail(email)) {
-      window.alert("Invalid Email: Please enter a valid email address (e.g. name@example.com).");
+      window.alert("Invalid Email: Please enter a valid email address.");
       return;
     }
 
@@ -290,7 +297,7 @@ function renderAuthPage() {
 
       if (!user.emailVerified && !checkIsAdmin(user.email)) {
         await signOut(auth);
-        window.alert("Please verify your email address before logging in. Check your inbox for the verification link.");
+        window.alert("Please verify your email address before logging in. Check your inbox for the link.");
         return;
       }
 
@@ -340,7 +347,7 @@ function renderAuthPage() {
     const password = document.querySelector('#page-signup-password').value;
 
     if (!isValidEmail(email)) {
-      window.alert("Invalid Email: Please provide a valid email address (e.g. name@example.com).");
+      window.alert("Invalid Email: Please provide a valid email address.");
       return;
     }
 
@@ -387,8 +394,20 @@ function render() {
     return;
   }
 
-  const dog = selectedDog();
-  selectedDogId = dog ? dog.id : null;
+  // Partition dogs into active and memorial archived groups
+  const activeDogs = state.dogs.filter((d) => !isDogArchived(d));
+  const archivedDogs = state.dogs.filter((d) => isDogArchived(d));
+
+  const currentList = activeDogViewTab === 'archived' ? archivedDogs : activeDogs;
+
+  // Selected dog resolution
+  let dog = state.dogs.find((d) => d.id === selectedDogId);
+  if (!dog && currentList.length > 0) {
+    dog = currentList[0];
+    selectedDogId = dog.id;
+  }
+
+  const dogArchived = dog ? isDogArchived(dog) : false;
 
   const sessions = dog
     ? state.sessions
@@ -407,7 +426,7 @@ function render() {
     return time >= sevenDaysAgo;
   }).length;
 
-  const activeDogAge = dog ? calculateAgeYears(dog.DateOfBirth) : 0;
+  const activeDogAge = dog ? calculateAgeYears(dog.DateOfBirth, dog.DateOfDeath) : 0;
   const isAdmin = checkIsAdmin(currentUser.email);
 
   root.innerHTML = `
@@ -420,12 +439,13 @@ function render() {
       </div>
     </section>
 
+    <!-- STATS OVERVIEW SECTION -->
     <section class="stats" aria-label="Training overview">
       <a href="dogs-overview.html" class="stat-card" style="text-decoration: none; color: inherit;">
         <span class="stat-icon" aria-hidden="true">♧</span>
         <div>
-          <p class="stat-value">${state.dogs.length}</p>
-          <p class="stat-label">${isAdmin ? 'All dogs in database' : 'Dogs in your care'}</p>
+          <p class="stat-value">${activeDogs.length}</p>
+          <p class="stat-label">Active Dogs</p>
         </div>
       </a>
 
@@ -438,38 +458,49 @@ function render() {
       </a>
 
       <a href="analytics.html" class="stat-card" style="text-decoration: none; color: inherit;">
-        <span class="stat-icon" aria-hidden="true">↗</span>
+        <span class="stat-icon" aria-hidden="true">🕊</span>
         <div>
-          <p class="stat-value">${recentCount}</p>
-          <p class="stat-label">Entries this week</p>
+          <p class="stat-value">${archivedDogs.length}</p>
+          <p class="stat-label">Memorial Archives</p>
         </div>
       </a>
     </section>
 
     <section class="content-grid">
+      <!-- DOG LIST PANEL WITH ACTIVE VS ARCHIVED TABS -->
       <article class="panel" aria-labelledby="dogs-heading">
         <div class="panel-heading">
           <div>
-            <h2 id="dogs-heading">${isAdmin ? 'All Dog Profiles' : 'Your Dogs'}</h2>
-            <p>Choose a profile to see history</p>
+            <h2 id="dogs-heading">Dog Profiles</h2>
+            <p>Select a profile to review journals</p>
           </div>
-          <span class="count-badge">${state.dogs.length}</span>
+        </div>
+
+        <!-- TAB SWITCHER -->
+        <div style="display: flex; gap: 6px; margin: 10px 0 14px; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
+          <button type="button" id="tab-active-dogs" class="button ${activeDogViewTab === 'active' ? 'button-primary' : 'button-quiet'}" style="flex: 1; min-height: 30px; font-size: 11px;">
+            Active Dogs (${activeDogs.length})
+          </button>
+          <button type="button" id="tab-archived-dogs" class="button ${activeDogViewTab === 'archived' ? 'button-primary' : 'button-quiet'}" style="flex: 1; min-height: 30px; font-size: 11px;">
+            Memorial Archives (${archivedDogs.length})
+          </button>
         </div>
 
         ${
-          state.dogs.length
+          currentList.length
             ? `<div class="dog-list">
-                ${state.dogs
+                ${currentList
                   .map((item) => {
-                    const itemAge = calculateAgeYears(item.DateOfBirth);
+                    const itemAge = calculateAgeYears(item.DateOfBirth, item.DateOfDeath);
                     const initial = (item.Name ? item.Name.charAt(0) : '?').toUpperCase();
                     const itemColor = item.Color || '#315f4e';
+                    const isArch = isDogArchived(item);
 
                     return `
                       <button class="dog-item" type="button"
                         data-select-dog="${escapeHtml(item.id)}"
                         aria-pressed="${dog?.id === item.id}"
-                        style="border-left: 4px solid ${escapeHtml(itemColor)};">
+                        style="border-left: 4px solid ${escapeHtml(itemColor)}; opacity: ${isArch ? '0.88' : '1'};">
                         <span class="dog-avatar" aria-hidden="true" style="overflow: hidden; background: ${escapeHtml(itemColor)}22; color: ${escapeHtml(itemColor)};">
                           ${
                             item.PhotoDataUrl
@@ -478,10 +509,10 @@ function render() {
                           }
                         </span>
                         <span class="dog-summary">
-                          <span class="dog-name">${escapeHtml(item.Name || 'Unnamed')}</span>
+                          <span class="dog-name">${escapeHtml(item.Name || 'Unnamed')} ${isArch ? '🕊' : ''}</span>
                           <span class="dog-meta">
                             ${escapeHtml(item.Breed || 'Breed not specified')} ·
-                            ${itemAge} ${itemAge === 1 ? 'year' : 'years'} old
+                            ${itemAge} ${itemAge === 1 ? 'yr' : 'yrs'} ${isArch ? 'memorial' : 'old'}
                           </span>
                         </span>
                         <span class="chevron" aria-hidden="true">›</span>
@@ -490,10 +521,11 @@ function render() {
                   })
                   .join('')}
               </div>`
-            : '<p class="empty-state">No dog profiles yet. Click "+ Add Dog" above to create one.</p>'
+            : `<p class="empty-state">${activeDogViewTab === 'archived' ? 'No memorial archived profiles.' : 'No active dog profiles yet.'}</p>`
         }
       </article>
 
+      <!-- DOG DETAIL PANEL -->
       ${
         dog
           ? `
@@ -507,9 +539,15 @@ function render() {
             }
           </span>
           <div class="detail-title">
-            <h2 id="selected-dog-name">${escapeHtml(dog.Name || 'Unnamed')}</h2>
-            <p style="display: flex; align-items: center; gap: 8px;">
-              <span>${escapeHtml(dog.Breed || 'Breed not specified')} · ${activeDogAge} ${activeDogAge === 1 ? 'year' : 'years'} old</span>
+            <h2 id="selected-dog-name">
+              ${escapeHtml(dog.Name || 'Unnamed')}
+              ${dogArchived ? '<span style="font-size: 11px; background: #e2e8f0; color: #4a5568; padding: 2px 8px; border-radius: 12px; margin-left: 6px; font-weight: normal;">Memorial Archive 🕊</span>' : ''}
+            </h2>
+            <p style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span>
+                ${escapeHtml(dog.Breed || 'Breed not specified')} · 
+                ${dogArchived ? `Lived ${activeDogAge} years` : `${activeDogAge} ${activeDogAge === 1 ? 'year' : 'years'} old`}
+              </span>
               ${
                 dog.Color
                   ? `<span style="display: inline-flex; align-items: center; gap: 4px; font-size: 10px; background: #f0f1ed; padding: 2px 6px; border-radius: 4px;">
@@ -520,38 +558,59 @@ function render() {
               }
             </p>
           </div>
-          <button type="button" class="button" data-delete-dog="${escapeHtml(dog.id)}"
-            style="background: #fff; color: #b73a3a; border: 1px solid #f1c5c5; font-size: 11px; padding: 0 12px; display: inline-flex; align-items: center; gap: 5px; height: 34px;"
-            title="Delete ${escapeHtml(dog.Name)} profile">
-            <span aria-hidden="true">🗑</span> Delete Dog
-          </button>
+
+          <div style="display: flex; gap: 8px; align-items: center;">
+            ${
+              !dogArchived
+                ? `<button type="button" class="button" data-open-archive-modal="${escapeHtml(dog.id)}"
+                    style="background: #fff; color: #4a5568; border: 1px solid #cbd5e0; font-size: 11px; padding: 0 10px; height: 34px;"
+                    title="Mark profile as passed">
+                    🕊 Mark Passed
+                  </button>`
+                : ''
+            }
+            <button type="button" class="button" data-delete-dog="${escapeHtml(dog.id)}"
+              style="background: #fff; color: #b73a3a; border: 1px solid #f1c5c5; font-size: 11px; padding: 0 10px; height: 34px;"
+              title="Delete profile">
+              🗑 Delete
+            </button>
+          </div>
         </div>
 
         ${dog.Notes ? `<p class="profile-notes">${escapeHtml(dog.Notes)}</p>` : ''}
 
-        <form class="session-form" id="session-form">
-          <h3>Log a training entry</h3>
-          <label>Behavior or activity
-            <input name="Behavior" required maxlength="100" placeholder="e.g. Calm greeting">
-          </label>
-
-          <div class="form-row">
-            <label>Possible trigger
-              <input name="Trigger" maxlength="100" placeholder="Optional">
+        <!-- TRAINING ENTRY FORM: Disabled if dog is archived -->
+        ${
+          dogArchived
+            ? `<div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin: 16px 0; text-align: center; color: #64748b; font-size: 13px;">
+                🕊 This memorial profile is archived. All training entries below are safely preserved in read-only mode.
+               </div>`
+            : `
+          <form class="session-form" id="session-form">
+            <h3>Log a training entry</h3>
+            <label>Behavior or activity
+              <input name="Behavior" required maxlength="100" placeholder="e.g. Calm greeting">
             </label>
-            <label>Notes
-              <input name="Notes" maxlength="250" placeholder="What happened?">
-            </label>
-          </div>
 
-          <button class="button button-primary" type="submit">
-            Save entry <span aria-hidden="true">+</span>
-          </button>
-        </form>
+            <div class="form-row">
+              <label>Possible trigger
+                <input name="Trigger" maxlength="100" placeholder="Optional">
+              </label>
+              <label>Notes
+                <input name="Notes" maxlength="250" placeholder="What happened?">
+              </label>
+            </div>
 
+            <button class="button button-primary" type="submit">
+              Save entry <span aria-hidden="true">+</span>
+            </button>
+          </form>`
+        }
+
+        <!-- SESSION HISTORY -->
         <section class="history" aria-label="${escapeHtml(dog.Name)} training history">
           <h3 class="history-heading">
-            Recent activity <span>${sessions.length} ${sessions.length === 1 ? 'entry' : 'entries'}</span>
+            ${dogArchived ? 'Preserved Training History' : 'Recent activity'} <span>${sessions.length} ${sessions.length === 1 ? 'entry' : 'entries'}</span>
           </h3>
 
           ${
@@ -602,6 +661,16 @@ function render() {
     </section>
   `;
 
+  root.querySelector('#tab-active-dogs')?.addEventListener('click', () => {
+    activeDogViewTab = 'active';
+    render();
+  });
+
+  root.querySelector('#tab-archived-dogs')?.addEventListener('click', () => {
+    activeDogViewTab = 'archived';
+    render();
+  });
+
   root.querySelectorAll('[data-select-dog]').forEach((button) => {
     button.addEventListener('click', () => {
       selectedDogId = button.dataset.selectDog;
@@ -611,6 +680,7 @@ function render() {
 
   root.querySelector('#session-form')?.addEventListener('submit', onSessionSubmit);
   root.querySelector('[data-delete-dog]')?.addEventListener('click', onDeleteDog);
+  root.querySelector('[data-open-archive-modal]')?.addEventListener('click', onOpenArchiveModal);
   root.querySelector('#admin-seed-btn')?.addEventListener('click', injectTestData);
   root.querySelector('#delete-account-btn')?.addEventListener('click', onDeleteAccount);
 }
@@ -654,13 +724,48 @@ async function onDeleteDog() {
   }
 }
 
-// Reference to delete account dialog elements
-const deleteAccountDialog = document.querySelector('#delete-account-dialog');
-const deleteAccountInput = document.querySelector('#delete-account-confirm-input');
-const confirmDeleteAccountBtn = document.querySelector('#confirm-delete-account-btn');
-const closeDeleteAccountButtons = document.querySelectorAll('[data-close-delete-account]');
+function onOpenArchiveModal() {
+  const dog = selectedDog();
+  if (!dog) return;
+  lockDateInputsToToday();
+  archiveDialog?.showModal();
+}
 
-// Wire dismiss handlers for delete account dialog
+archiveForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const dog = selectedDog();
+  if (!dog) return;
+
+  const dodValue = document.querySelector('#archive-dod-input')?.value;
+  if (!dodValue) {
+    window.alert("Please provide a date of passing.");
+    return;
+  }
+
+  try {
+    await updateDogDeathDate(db, dog.id, dodValue, dog.DateOfBirth);
+    archiveDialog?.close();
+    activeDogViewTab = 'archived';
+    window.alert(`${dog.Name}'s profile has been moved to Memorial Archives.`);
+  } catch (err) {
+    window.alert(`Could not archive profile: ${err.message}`);
+  }
+});
+
+closeArchiveButtons.forEach((btn) => {
+  btn.addEventListener('click', () => archiveDialog?.close());
+});
+
+// Reference to delete account dialog elements
+function onDeleteAccount() {
+  if (!currentUser) {
+    window.alert("No user is currently signed in.");
+    return;
+  }
+  if (deleteAccountInput) deleteAccountInput.value = '';
+  deleteAccountDialog?.showModal();
+}
+
 closeDeleteAccountButtons.forEach((btn) => {
   btn.addEventListener('click', () => {
     deleteAccountDialog?.close();
@@ -671,16 +776,6 @@ deleteAccountDialog?.addEventListener('click', (e) => {
   if (e.target === deleteAccountDialog) deleteAccountDialog.close();
 });
 
-// Trigger button opens the HTML dialog instead of calling prompt()
-function onDeleteAccount() {
-  if (!currentUser) {
-    window.alert("No user is currently signed in.");
-    return;
-  }
-  if (deleteAccountInput) deleteAccountInput.value = '';
-  deleteAccountDialog?.showModal();
-}
-
 // Confirmed delete button execution
 confirmDeleteAccountBtn?.addEventListener('click', async () => {
   const enteredText = (deleteAccountInput?.value || '').trim();
@@ -690,7 +785,6 @@ confirmDeleteAccountBtn?.addEventListener('click', async () => {
     return;
   }
 
-  // Dismiss modal before proceeding
   deleteAccountDialog?.close();
 
   const targetUserId = currentUser.uid;
@@ -699,10 +793,8 @@ confirmDeleteAccountBtn?.addEventListener('click', async () => {
   const knownDogIds = state.dogs.map((d) => d.id);
 
   try {
-    // 1. Delete Firestore records (dogs, sessions, Users doc)
     await deleteUserAccount(db, targetUserId, targetEmail, knownDogIds);
 
-    // 2. Delete Firebase Authentication user record if present
     if (authUser) {
       try {
         await deleteUser(authUser);
@@ -722,7 +814,6 @@ confirmDeleteAccountBtn?.addEventListener('click', async () => {
       await signOut(auth).catch(() => {});
     }
 
-    // 3. Clear local storage and active Firestore observers
     localStorage.removeItem('dogtracks_db_user');
     if (targetEmail) {
       localStorage.removeItem(`pending_signup_${targetEmail.toLowerCase()}`);
@@ -789,6 +880,7 @@ async function injectTestData() {
 // -------------------------------------------------------------
 openDogDialogBtn?.addEventListener('click', () => {
   lockDateInputsToToday();
+  initializeBreedPickers(dogDialog);
   dogDialog?.showModal();
 });
 closeDogDialogButtons.forEach((btn) => btn.addEventListener('click', () => dogDialog?.close()));
@@ -803,6 +895,7 @@ dogForm?.addEventListener('submit', async (event) => {
   const breed = getBreedSelection(dogForm.querySelector("[data-breed-fields]"));
   const color = formData.get('Color') || '#315f4e';
   const dateOfBirth = formData.get('DateOfBirth');
+  const dateOfDeath = formData.get('DateOfDeath');
   const notes = formData.get('Notes');
   const photoFile = formData.get('PhotoFile');
 
@@ -833,6 +926,7 @@ dogForm?.addEventListener('submit', async (event) => {
       Color: color,
       PhotoDataUrl: photoDataUrl,
       DateOfBirth: dateOfBirth,
+      DateOfDeath: dateOfDeath || null,
       Notes: notes
     }, currentUser?.uid);
 
