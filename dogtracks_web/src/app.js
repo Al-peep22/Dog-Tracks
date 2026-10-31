@@ -94,7 +94,6 @@ let state = {
   sessions: []
 };
 
-let selectedDogId = null;
 let selectedDogId = new URLSearchParams(window.location.search).get("dog");
 
 // -------------------------------------------------------------
@@ -420,7 +419,6 @@ function render() {
         })
     : [];
 
-  const sessionCount = state.sessions.length;
   const isAdmin = checkIsAdmin(currentUser.email);
   const accountDogIds = new Set(
     rawAllDogs
@@ -433,7 +431,6 @@ function render() {
   const dashboardSessions = isAdmin ? state.sessions : accountSessions;
   const sessionCount = dashboardSessions.length;
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const recentCount = state.sessions.filter((s) => {
   const recentCount = dashboardSessions.filter((s) => {
     const time = s.OccurredAt?.toMillis ? s.OccurredAt.toMillis() : new Date(s.OccurredAt).getTime();
     return time >= sevenDaysAgo;
