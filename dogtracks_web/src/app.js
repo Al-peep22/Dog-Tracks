@@ -436,12 +436,7 @@ function render() {
     return time >= sevenDaysAgo;
   }).length;
 
-<<<<<<< HEAD
   const activeDogAge = dog ? calculateAgeYears(dog.DateOfBirth, dog.DateOfDeath) : 0;
-  const isAdmin = checkIsAdmin(currentUser.email);
-=======
-  const activeDogAge = dog ? calculateAgeYears(dog.DateOfBirth) : 0;
->>>>>>> 64f2445cf980c82ba58e2e004c62a1c657dfdfd0
 
   root.innerHTML = `
     ${buildAdminPanel()}
