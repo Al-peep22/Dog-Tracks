@@ -1,13 +1,8 @@
 // -------------------------------------------------------------
 // FIREBASE MODULE IMPORTS
 // -------------------------------------------------------------
-// Core Firebase application initialization helper from official CDN.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-
-// Cloud Firestore database access and real-time snapshot listeners from official CDN.
 import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-// Firebase Authentication methods including account deletion.
 import { 
   getAuth, 
   signInWithEmailAndPassword, 
@@ -18,7 +13,6 @@ import {
   onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// Storage module CRUD helpers, calculators, and user verification.
 import { 
   createDog, 
   createSession, 
@@ -38,7 +32,6 @@ import {
 // -------------------------------------------------------------
 // FIREBASE CONFIGURATION & INITIALIZATION
 // -------------------------------------------------------------
-// Project-specific credentials for the dog-tracks-24243 Firebase application.
 const firebaseConfig = {
   apiKey: "AIzaSyD7TWP-avTLAy-TlxfZhN-Ck3pR-fp6su0",
   authDomain: "dog-tracks-24243.firebaseapp.com",
@@ -49,22 +42,15 @@ const firebaseConfig = {
   measurementId: "G-CVLKTJ3LTY"
 };
 
-// Initialize the Firebase app instance.
 const app = initializeApp(firebaseConfig);
-
-// Initialize the Cloud Firestore database instance.
 const db = getFirestore(app);
-
-// Initialize the Firebase Authentication service instance.
 const auth = getAuth(app);
 
-// Complete list of authorized admin email addresses.
 const ADMIN_EMAILS = [
   "dogtracksadmin@dogtracks.com",
   "admin@dogtracks.com"
 ];
 
-// Helper to determine if a given email has administrative rights.
 function checkIsAdmin(email) {
   if (!email) return false;
   return ADMIN_EMAILS.some((adminEmail) => adminEmail.toLowerCase() === String(email).trim().toLowerCase());
@@ -73,55 +59,36 @@ function checkIsAdmin(email) {
 // -------------------------------------------------------------
 // DOM REFERENCES
 // -------------------------------------------------------------
-// Main container mount point targeted for rendering application views.
 const root = document.querySelector('#app');
-
-// Modal dialog used to capture new dog profiles.
 const dogDialog = document.querySelector('#dog-dialog');
-
-// Form element inside the add dog dialog.
 const dogForm = document.querySelector('#dog-form');
-initializeBreedPickers(dogForm);
 
 // Trigger button used to open the add dog dialog.
 const openDogDialogBtn = document.querySelector('#open-dog-dialog');
-
-// Collection of buttons configured to dismiss the add dog dialog.
 const closeDogDialogButtons = document.querySelectorAll('[data-close-dialog]');
-
-// Navigation action button used to trigger login or logout.
 const authBtn = document.querySelector('#auth-btn');
 
 // -------------------------------------------------------------
 // IN-MEMORY APPLICATION STATE
 // -------------------------------------------------------------
-// Track active user profile (either from Firebase Auth or from Users collection).
 let currentUser = null;
-
-// Track active authentication tab on login screen ('login' or 'signup').
 let activeAuthTab = 'login';
-
-// Unsubscribe handles used to detach Firestore listeners upon signing out.
 let unsubscribeDogs = null;
 let unsubscribeSessions = null;
 
-// Master database caches holding every document received from Firestore.
 let rawAllDogs = [];
 let rawAllSessions = [];
 
-// Application state holding filtered synchronizations of dogs and sessions for current view.
 let state = {
   dogs: [],
   sessions: []
 };
 
-// Identifier of the currently focused dog profile.
 let selectedDogId = null;
 
 // -------------------------------------------------------------
 // UTILITY FUNCTIONS & VALIDATORS
 // -------------------------------------------------------------
-// Sanitize raw text to prevent Cross-Site Scripting (XSS).
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({
     '&': '&amp;',
@@ -132,13 +99,11 @@ function escapeHtml(value) {
   })[character]);
 }
 
-// Strict email format validation.
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(String(email).trim());
 }
 
-// Convert an uploaded file into a base64 Data URL string via native FileReader.
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     if (!file) {
@@ -152,19 +117,16 @@ function readFileAsDataUrl(file) {
   });
 }
 
-// Convert Firestore Timestamps or standard date representations into localized date strings.
 function relativeDate(value) {
   const date = value?.toDate ? value.toDate() : new Date(value);
   if (Number.isNaN(date.getTime())) return 'Date unavailable';
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
-// Return the dog matching selectedDogId or fallback to the first dog in state.
 function selectedDog() {
   return state.dogs.find((d) => d.id === selectedDogId) ?? state.dogs[0] ?? null;
 }
 
-// Render an error boundary message card within the root DOM container.
 function showError(message) {
   if (!root) return;
   root.innerHTML = `
@@ -175,7 +137,6 @@ function showError(message) {
     </section>`;
 }
 
-// Helper to lock the Date input max attribute to today's date format (YYYY-MM-DD).
 function lockDateInputsToToday() {
   const now = new Date();
   const year = now.getFullYear();
@@ -251,6 +212,7 @@ function renderAuthPage() {
           <p style="color: var(--muted); font-size: 13px; margin: 0;">Sign in to view dogs and training records</p>
         </div>
 
+        <!-- Authentication Tab Buttons -->
         <div style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--line); padding-bottom: 10px;">
           <button type="button" id="auth-tab-login" class="button ${activeAuthTab === 'login' ? 'button-primary' : 'button-quiet'}" style="flex: 1; min-height: 36px; font-size: 12px;">
             Log In
@@ -260,6 +222,7 @@ function renderAuthPage() {
           </button>
         </div>
 
+        <!-- 1. LOGIN FORM -->
         <form id="page-login-form" style="display: ${activeAuthTab === 'login' ? 'grid' : 'none'}; gap: 14px;">
           <label>
             Email Address
@@ -276,6 +239,7 @@ function renderAuthPage() {
           </button>
         </form>
 
+        <!-- 2. SIGN UP FORM -->
         <form id="page-signup-form" style="display: ${activeAuthTab === 'signup' ? 'grid' : 'none'}; gap: 14px;">
           <label>
             Full Name
@@ -436,9 +400,9 @@ function render() {
         })
     : [];
 
-  const sessionCount = sessions.length;
+  const sessionCount = state.sessions.length;
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const recentCount = sessions.filter((s) => {
+  const recentCount = state.sessions.filter((s) => {
     const time = s.OccurredAt?.toMillis ? s.OccurredAt.toMillis() : new Date(s.OccurredAt).getTime();
     return time >= sevenDaysAgo;
   }).length;
@@ -690,55 +654,65 @@ async function onDeleteDog() {
   }
 }
 
-// Handler for permanent account deletion with confirmation checks.
-async function onDeleteAccount() {
-  if (!currentUser) return;
+// Reference to delete account dialog elements
+const deleteAccountDialog = document.querySelector('#delete-account-dialog');
+const deleteAccountInput = document.querySelector('#delete-account-confirm-input');
+const confirmDeleteAccountBtn = document.querySelector('#confirm-delete-account-btn');
+const closeDeleteAccountButtons = document.querySelectorAll('[data-close-delete-account]');
 
-  const confirmStep1 = window.confirm(
-    "Are you sure you want to permanently delete your account?\n\nAll of your dog profiles and training logs will be irreversibly erased."
-  );
-  if (!confirmStep1) return;
+// Wire dismiss handlers for delete account dialog
+closeDeleteAccountButtons.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    deleteAccountDialog?.close();
+  });
+});
 
-  const typedConfirmation = window.prompt('To confirm deletion, please type "DELETE" into the box below:');
-  if (!typedConfirmation || typedConfirmation.trim().toUpperCase() !== "DELETE") {
-    window.alert("Account deletion canceled. The typed confirmation did not match.");
+deleteAccountDialog?.addEventListener('click', (e) => {
+  if (e.target === deleteAccountDialog) deleteAccountDialog.close();
+});
+
+// Trigger button opens the HTML dialog instead of calling prompt()
+function onDeleteAccount() {
+  if (!currentUser) {
+    window.alert("No user is currently signed in.");
+    return;
+  }
+  if (deleteAccountInput) deleteAccountInput.value = '';
+  deleteAccountDialog?.showModal();
+}
+
+// Confirmed delete button execution
+confirmDeleteAccountBtn?.addEventListener('click', async () => {
+  const enteredText = (deleteAccountInput?.value || '').trim();
+
+  if (enteredText !== "DELETE") {
+    window.alert('Account deletion canceled. You must type "DELETE" exactly to confirm.');
     return;
   }
 
+  // Dismiss modal before proceeding
+  deleteAccountDialog?.close();
+
+  const targetUserId = currentUser.uid;
+  const targetEmail = currentUser.email;
+  const authUser = auth.currentUser;
+  const knownDogIds = state.dogs.map((d) => d.id);
+
   try {
-    const targetUserId = currentUser.uid;
-    const isDbUser = Boolean(currentUser.isDatabaseUser);
+    // 1. Delete Firestore records (dogs, sessions, Users doc)
+    await deleteUserAccount(db, targetUserId, targetEmail, knownDogIds);
 
-    // 1. Delete Firestore records FIRST (dogs, sessions, and profile document)
-    await deleteUserAccount(db, targetUserId);
-
-    // 2. Clean up local state and listeners before deleting Auth user
-    if (unsubscribeDogs) {
-      unsubscribeDogs();
-      unsubscribeDogs = null;
-    }
-    if (unsubscribeSessions) {
-      unsubscribeSessions();
-      unsubscribeSessions = null;
-    }
-
-    localStorage.removeItem('dogtracks_db_user');
-    localStorage.removeItem(`pending_signup_${(currentUser.email || '').toLowerCase()}`);
-    rawAllDogs = [];
-    rawAllSessions = [];
-    state = { dogs: [], sessions: [] };
-    selectedDogId = null;
-
-    // 3. If signed in through Firebase Auth, delete the Auth user
-    if (!isDbUser && auth.currentUser) {
-      const authUser = auth.currentUser;
+    // 2. Delete Firebase Authentication user record if present
+    if (authUser) {
       try {
         await deleteUser(authUser);
       } catch (authErr) {
         if (authErr.code === 'auth/requires-recent-login') {
+          window.alert(
+            "Your database records were removed, but deleting your login credentials requires a fresh login.\n\nPlease log in again and click Delete Account once more to finish."
+          );
           await signOut(auth);
           currentUser = null;
-          window.alert("Your database records were cleared, but deleting your login requires a recent sign-in. Please log in once more and click Delete Account again to finish.");
           render();
           return;
         }
@@ -748,17 +722,38 @@ async function onDeleteAccount() {
       await signOut(auth).catch(() => {});
     }
 
+    // 3. Clear local storage and active Firestore observers
+    localStorage.removeItem('dogtracks_db_user');
+    if (targetEmail) {
+      localStorage.removeItem(`pending_signup_${targetEmail.toLowerCase()}`);
+    }
+
+    if (unsubscribeDogs) {
+      unsubscribeDogs();
+      unsubscribeDogs = null;
+    }
+    if (unsubscribeSessions) {
+      unsubscribeSessions();
+      unsubscribeSessions = null;
+    }
+
     currentUser = null;
+    rawAllDogs = [];
+    rawAllSessions = [];
+    state = { dogs: [], sessions: [] };
+    selectedDogId = null;
+
     authBtn.textContent = 'Sign In';
     if (openDogDialogBtn) openDogDialogBtn.style.display = 'none';
 
     window.alert("Your account and all associated records have been permanently deleted.");
     render();
+
   } catch (error) {
-    console.error("Account deletion error:", error);
-    window.alert(`Could not delete account: ${error.message}`);
+    console.error("[DeleteAccount] Fatal error:", error);
+    window.alert(`Could not delete account:\n${error.message}\n(Code: ${error.code || 'N/A'})`);
   }
-}
+});
 
 async function injectTestData() {
   try {
@@ -882,6 +877,8 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     if (!user.emailVerified && !checkIsAdmin(user.email)) {
       signOut(auth);
+      currentUser = null;
+      render();
       return;
     }
 
@@ -973,6 +970,6 @@ function subscribeToDatabase() {
   );
 }
 
-// Initial invocation.
+// Initial invocation: guarantees date constraints and immediate login view render if unauthenticated.
 lockDateInputsToToday();
 render();
