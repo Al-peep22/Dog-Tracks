@@ -437,7 +437,7 @@ a.button {
           <div class="panel-heading">
             <div>
               <h2 id="dog-cards-title">Dog Profiles</h2>
-              <p>Quick stats per dog, plus picture and color customization</p>
+              <p>Quick stats per dog, plus editable profiles, pictures, and colors</p>
             </div>
             <span class="count-badge" id="dog-count">0</span>
           </div>
@@ -475,7 +475,7 @@ a.button {
               <div class="dog-card-actions">
                 <a class="button button-secondary" data-action="open" href="#">Open</a>
                 <button type="button" class="button button-quiet" data-action="customize">
-                  Customize
+                  Edit profile
                 </button>
               </div>
             </article>
@@ -602,19 +602,19 @@ a.button {
       </div>
     </dialog>
 
-    <!-- CUSTOMIZE DOG MODAL DIALOG (profile picture + dedicated color) -->
+    <!-- EDIT DOG PROFILE MODAL DIALOG -->
     <dialog id="customize-dialog" class="dialog dog-dialog" aria-labelledby="customize-title">
       <!-- Card frame -->
       <div class="dialog-card">
         <!-- Dialog header -->
         <div class="dialog-header dialog-heading">
-          <h2 id="customize-title">Customize <span id="customize-dog-name">dog</span></h2>
+          <h2 id="customize-title">Edit profile: <span id="customize-dog-name">dog</span></h2>
           <button type="button" class="icon-button" data-close-customize aria-label="Close dialog">
             &times;
           </button>
         </div>
 
-        <!-- Form to update the dog's picture and accent color -->
+        <!-- Form to update the dog's profile details and appearance -->
         <form id="customize-form" class="dialog-form" method="dialog">
           <!-- Hidden id of the dog being edited -->
           <input type="hidden" name="DogId" id="customize-dog-id" />
@@ -635,6 +635,21 @@ a.button {
           <label>
             Dedicated Color
             <input type="color" name="Color" id="customize-color" value="#315f4e" />
+          </label>
+
+          <label>
+            Dog's Name
+            <input type="text" name="Name" id="customize-name" required maxlength="50" />
+          </label>
+
+          <label>
+            Breed
+            <input type="text" name="Breed" id="customize-breed" maxlength="50" />
+          </label>
+
+          <label>
+            Birthday
+            <input type="date" name="DateOfBirth" id="customize-birthday" />
           </label>
 
           <!-- Remove current picture -->

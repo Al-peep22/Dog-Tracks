@@ -317,7 +317,7 @@ async function initializeAnalytics(user) {
   dogColors = new Map();
   dogVisibility = new Map();
   state.dogs.forEach((dog, index) => {
-    dogColors.set(dog.id, baseColors[index % baseColors.length]);
+    dogColors.set(dog.id, dog.color || baseColors[index % baseColors.length]);
     dogVisibility.set(dog.id, true);
   });
 

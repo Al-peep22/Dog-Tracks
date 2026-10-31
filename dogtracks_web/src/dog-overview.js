@@ -8,6 +8,7 @@ import {
   doc,
   updateDoc,
   deleteField,
+  Timestamp,
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
   signInWithEmailAndPassword,
@@ -91,6 +92,34 @@ function formatAge(months) {
 function formatDate(date) {
   if (!date) return "—";
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
+function dateInputValue(value) {
+  const date = toDate(value);
+  if (!date) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function dateFromInput(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) throw new Error("Enter a valid birthday.");
+  const [yearText, monthText, dayText] = match.slice(1);
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+    throw new Error("Enter a valid birthday.");
+  }
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (date > today) {
+    throw new Error("Birthday cannot be in the future.");
+  }
+  return date;
 }
 
 // Stable default color per dog so colors don't shift when dogs are added/removed
@@ -529,10 +558,13 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// ---------- 7. CUSTOMIZE DIALOG ----------
+// ---------- 7. EDIT PROFILE DIALOG ----------
 
 const customizeDialog = $("#customize-dialog");
 const customizeForm = $("#customize-form");
+const customizeName = $("#customize-name");
+const customizeBreed = $("#customize-breed");
+const customizeBirthday = $("#customize-birthday");
 const customizeColor = $("#customize-color");
 const customizePhoto = $("#customize-photo");
 const previewAvatar = $("#customize-preview-avatar");
@@ -540,6 +572,7 @@ const previewAvatar = $("#customize-preview-avatar");
 // undefined = photo unchanged, null = remove it, string = new data URL
 let pendingPhoto;
 let editingDogId = null;
+customizeBirthday.max = dateInputValue(new Date());
 
 function editingDog() {
   return rawDogs.find((d) => d.id === editingDogId) || null;
@@ -549,7 +582,7 @@ function refreshPreview() {
   const dog = editingDog();
   if (!dog) return;
   setAvatar(previewAvatar, {
-    name: dog.Name,
+    name: customizeName.value.trim() || dog.Name,
     color: customizeColor.value || dogColor(dog),
     photo: pendingPhoto === undefined ? dog.PhotoDataUrl : pendingPhoto,
   });
@@ -564,6 +597,9 @@ function openCustomize(dogId) {
 
   $("#customize-dog-name").textContent = dog.Name || "dog";
   $("#customize-dog-id").value = dog.id;
+  customizeName.value = dog.Name || "";
+  customizeBreed.value = dog.Breed || "";
+  customizeBirthday.value = dateInputValue(dog.DateOfBirth);
   customizeColor.value = dogColor(dog);
   refreshPreview();
   customizeDialog.showModal();
@@ -582,6 +618,10 @@ customizePhoto.addEventListener("change", async () => {
 });
 
 customizeColor.addEventListener("input", refreshPreview);
+customizeName.addEventListener("input", () => {
+  $("#customize-dog-name").textContent = customizeName.value.trim() || "dog";
+  refreshPreview();
+});
 
 $("#customize-remove-photo").addEventListener("click", () => {
   pendingPhoto = null;
@@ -593,11 +633,25 @@ customizeForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!editingDogId) return;
 
-  const patch = { Color: customizeColor.value };
-  if (pendingPhoto === null) patch.PhotoDataUrl = deleteField();
-  else if (pendingPhoto !== undefined) patch.PhotoDataUrl = pendingPhoto;
+  const name = customizeName.value.trim();
+  if (!name) {
+    window.alert("Enter a name for the dog.");
+    customizeName.focus();
+    return;
+  }
 
   try {
+    const patch = {
+      Name: name,
+      Breed: customizeBreed.value.trim(),
+      Color: customizeColor.value,
+      DateOfBirth: customizeBirthday.value
+        ? Timestamp.fromDate(dateFromInput(customizeBirthday.value))
+        : deleteField(),
+    };
+    if (pendingPhoto === null) patch.PhotoDataUrl = deleteField();
+    else if (pendingPhoto !== undefined) patch.PhotoDataUrl = pendingPhoto;
+
     // The snapshot listener re-renders the cards once Firestore confirms
     await updateDoc(doc(db, "Dogs", editingDogId), patch);
     customizeDialog.close();
