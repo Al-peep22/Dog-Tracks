@@ -29,7 +29,7 @@
         <button type="button" id="open-dog-dialog" class="button button-primary" style="display: none; flex-direction: column; justify-content: center;">
           + Add Dog
         </button>
-        <!-- Auth button: triggers authentication modal or logs out -->
+        <!-- Auth button: triggers login screen or logs user out -->
         <button type="button" id="auth-btn" class="button button-quiet" style="display: flex; flex-direction: column; justify-content: center;">
           Sign In
         </button>
@@ -38,96 +38,12 @@
 
     <!-- Main landmark shell -->
     <main class="page-shell">
-      <!-- Dynamic render mount point -->
+      <!-- Dynamic render mount point for Login page and Dashboard -->
       <div id="app">
         <!-- Initial placeholder before app.js renders -->
         <p class="loading-state">Loading DogTracks...</p>
       </div>
     </main>
-
-    <!-- AUTHENTICATION (LOGIN & SIGN UP) MODAL DIALOG -->
-    <dialog id="auth-dialog" class="dialog dog-dialog" aria-labelledby="auth-modal-title">
-      <!-- Inner modal card frame -->
-      <div class="dialog-card">
-        <!-- Dialog top header -->
-        <div class="dialog-header dialog-heading">
-          <!-- Accessible dialog title -->
-          <h2 id="auth-modal-title">Account Access</h2>
-          <!-- Dismiss button -->
-          <button type="button" class="icon-button" data-close-auth aria-label="Close dialog">
-            &times;
-          </button>
-        </div>
-
-        <!-- Tab switcher to alternate between Login and Sign Up -->
-        <div class="auth-tabs" style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
-          <!-- Tab button for Login -->
-          <button type="button" id="tab-login-btn" class="button button-primary" style="flex: 1; min-height: 34px; font-size: 12px;">
-            Log In
-          </button>
-          <!-- Tab button for Sign Up -->
-          <button type="button" id="tab-signup-btn" class="button button-quiet" style="flex: 1; min-height: 34px; font-size: 12px;">
-            Sign Up
-          </button>
-        </div>
-
-        <!-- 1. LOGIN FORM (Visible by default) -->
-        <form id="login-form" class="dialog-form" method="dialog">
-          <!-- Email field -->
-          <label>
-            Email Address
-            <input type="email" id="login-email" required placeholder="user@example.com" />
-          </label>
-
-          <!-- Password field -->
-          <label>
-            Password
-            <input type="password" id="login-password" required placeholder="••••••••" />
-          </label>
-
-          <!-- Action buttons -->
-          <div class="dialog-actions">
-            <button type="button" class="button button-secondary" data-close-auth>
-              Cancel
-            </button>
-            <button type="submit" class="button button-primary">
-              Log In
-            </button>
-          </div>
-        </form>
-
-        <!-- 2. SIGN UP FORM (Latitude and Longitude removed) -->
-        <form id="signup-form" class="dialog-form" method="dialog" style="display: none;">
-          <!-- User Name field -->
-          <label>
-            Full Name
-            <input type="text" id="signup-name" required placeholder="e.g. Bob" />
-          </label>
-
-          <!-- User Email field -->
-          <label>
-            Email Address
-            <input type="email" id="signup-email" required placeholder="dude123@gmail.com" />
-          </label>
-
-          <!-- User Password field -->
-          <label>
-            Password
-            <input type="password" id="signup-password" required minlength="6" placeholder="Choose a secure password (min 6 characters)" />
-          </label>
-
-          <!-- Action buttons -->
-          <div class="dialog-actions">
-            <button type="button" class="button button-secondary" data-close-auth>
-              Cancel
-            </button>
-            <button type="submit" class="button button-primary">
-              Create Account
-            </button>
-          </div>
-        </form>
-      </div>
-    </dialog>
 
     <!-- ADD DOG MODAL DIALOG -->
     <dialog id="dog-dialog" class="dialog dog-dialog" aria-labelledby="dialog-title">
@@ -191,6 +107,29 @@
             </button>
           </div>
         </form>
+      </div>
+    </dialog>
+
+    <!-- ACCOUNT DELETION CONFIRMATION DIALOG -->
+    <dialog id="delete-account-dialog" class="dialog dog-dialog" aria-labelledby="delete-account-title">
+      <div class="dialog-card">
+        <div class="dialog-header dialog-heading">
+          <h2 id="delete-account-title" style="color: #b73a3a;">Delete Account</h2>
+          <button type="button" class="icon-button" data-close-delete-account aria-label="Close dialog">&times;</button>
+        </div>
+        <div style="padding: 16px 0;">
+          <p style="margin: 0 0 12px; font-size: 13px; line-height: 1.5; color: #2d3748;">
+            This will permanently delete your user profile, all registered dogs, and all training records. <strong>This action cannot be undone.</strong>
+          </p>
+          <label style="display: block; font-size: 12px; margin-bottom: 6px;">
+            Type <strong>DELETE</strong> below to confirm:
+            <input type="text" id="delete-account-confirm-input" placeholder="DELETE" autocomplete="off" style="margin-top: 6px; width: 100%;" />
+          </label>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" class="button button-secondary" data-close-delete-account>Cancel</button>
+          <button type="button" id="confirm-delete-account-btn" class="button" style="background: #b73a3a; color: #fff;">Permanently Delete</button>
+        </div>
       </div>
     </dialog>
 
