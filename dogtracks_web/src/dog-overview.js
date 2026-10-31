@@ -11,11 +11,13 @@ import {
   Timestamp,
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { authenticateDatabaseUser, createUserProfile, extractId } from "./storage.js";
+import { authenticateDatabaseUser, extractId } from "./storage.js";
 import {
   countBreedOccurrences,
   getBreedSelection,
@@ -518,25 +520,36 @@ loginForm.addEventListener("submit", async (event) => {
   }
 });
 
-// Sign up creates a document in the Users collection, then signs in
+// Sign up creates a Firebase Auth account and requires email verification
 signupForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const name = $("#signup-name").value;
+  const name = $("#signup-name").value.trim();
+  const email = $("#signup-email").value.trim();
+  const password = $("#signup-password").value;
+
   try {
-    const newUser = await createUserProfile(db, {
+    const credential = await createUserWithEmailAndPassword(auth, email, password);
+    await sendEmailVerification(credential.user);
+    localStorage.setItem(`pending_signup_${email.toLowerCase()}`, JSON.stringify({
       name,
-      email: $("#signup-email").value,
-      password: $("#signup-password").value,
-      latitude: $("#signup-lat").value,
-      longitude: $("#signup-lng").value,
-    });
-    localStorage.setItem("dogtracks_db_user", JSON.stringify(newUser));
-    signedIn(newUser);
+      email,
+      password,
+    }));
+    await signOut(auth);
     signupForm.reset();
-    window.alert(`Account created successfully! Welcome, ${name}.`);
+    showAuthTab("login");
+    window.alert(
+      `Verification email sent to ${email}!\n\nPlease check your inbox and click the verification link before logging in.`
+    );
   } catch (error) {
     console.error("Sign up error:", error);
-    window.alert(`Sign up failed: ${error.message}`);
+    if (error.code === "auth/invalid-email") {
+      window.alert("Invalid Email: Please check the spelling of your email address.");
+    } else if (error.code === "auth/email-already-in-use") {
+      window.alert("An account already exists with this email address. Please log in instead.");
+    } else {
+      window.alert(`Sign up failed: ${error.message}`);
+    }
   }
 });
 
