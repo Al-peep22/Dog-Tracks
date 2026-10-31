@@ -84,7 +84,7 @@ let state = {
   sessions: []
 };
 
-let selectedDogId = null;
+let selectedDogId = new URLSearchParams(window.location.search).get("dog");
 
 // -------------------------------------------------------------
 // UTILITY FUNCTIONS & VALIDATORS
