@@ -16,6 +16,12 @@ import {
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { authenticateDatabaseUser, createUserProfile, extractId } from "./storage.js";
+import {
+  countBreedOccurrences,
+  getBreedSelection,
+  initializeBreedPickers,
+  setBreedSelection,
+} from "./breed-picker.js";
 
 // ---------- 1b. FIREBASE INIT (same project/config as app.js and analytics.js) ----------
 
@@ -57,6 +63,7 @@ const PALETTE = ["#315f4e", "#b77a34", "#587080", "#94684c", "#71814f", "#725e43
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+initializeBreedPickers();
 
 // ---------- 3. HELPERS ----------
 
@@ -160,12 +167,7 @@ function statsForDog(dogId) {
 }
 
 function breedCounts(dogs) {
-  const counts = new Map();
-  for (const d of dogs) {
-    const breed = (d.Breed || "").trim() || "Unknown";
-    counts.set(breed, (counts.get(breed) || 0) + 1);
-  }
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  return countBreedOccurrences(dogs);
 }
 
 function setAvatar(avatarEl, { name, color, photo }) {
@@ -216,7 +218,7 @@ function renderOverallStats(dogs) {
   const avg = ages.length ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : null;
   const dogIds = new Set(dogs.map((d) => d.id));
   const sessions = rawSessions.filter((s) => dogIds.has(extractId(s.DogId))).length;
-  const breeds = new Set(dogs.map((d) => (d.Breed || "Unknown").trim())).size;
+  const breeds = breedCounts(dogs).length;
 
   // [icon glyph, label, value] rendered with the journal's .stat-card
   const tiles = [
@@ -331,7 +333,7 @@ function renderBreedDistribution(dogs) {
   const chart = $("#breed-chart");
   const legend = $("#breed-legend");
   const counts = breedCounts(dogs);
-  const total = dogs.length;
+  const total = counts.reduce((sum, [, count]) => sum + count, 0);
 
   if (!total) {
     chart.style.background = "";
@@ -349,10 +351,11 @@ function renderBreedDistribution(dogs) {
     return `${PALETTE[i % PALETTE.length]} ${start}% ${end}%`;
   });
   chart.style.background = `conic-gradient(${stops.join(", ")})`;
-  chart.dataset.total = String(total);
+  chart.dataset.total = String(counts.length);
   chart.setAttribute(
     "aria-label",
-    "Breed distribution: " + counts.map(([b, n]) => `${b} ${n}`).join(", ")
+    "Breed distribution, counting mixed-breed dogs under each selected breed: " +
+      counts.map(([b, n]) => `${b} ${n}`).join(", ")
   );
 
   legend.replaceChildren(
@@ -563,7 +566,7 @@ onAuthStateChanged(auth, (user) => {
 const customizeDialog = $("#customize-dialog");
 const customizeForm = $("#customize-form");
 const customizeName = $("#customize-name");
-const customizeBreed = $("#customize-breed");
+const customizeBreedFields = $("#customize-breed").closest("[data-breed-fields]");
 const customizeBirthday = $("#customize-birthday");
 const customizeColor = $("#customize-color");
 const customizePhoto = $("#customize-photo");
@@ -598,7 +601,7 @@ function openCustomize(dogId) {
   $("#customize-dog-name").textContent = dog.Name || "dog";
   $("#customize-dog-id").value = dog.id;
   customizeName.value = dog.Name || "";
-  customizeBreed.value = dog.Breed || "";
+  setBreedSelection(customizeBreedFields, dog.Breed || "");
   customizeBirthday.value = dateInputValue(dog.DateOfBirth);
   customizeColor.value = dogColor(dog);
   refreshPreview();
@@ -643,7 +646,7 @@ customizeForm.addEventListener("submit", async (event) => {
   try {
     const patch = {
       Name: name,
-      Breed: customizeBreed.value.trim(),
+      Breed: getBreedSelection(customizeBreedFields),
       Color: customizeColor.value,
       DateOfBirth: customizeBirthday.value
         ? Timestamp.fromDate(dateFromInput(customizeBirthday.value))

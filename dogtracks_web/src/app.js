@@ -29,6 +29,11 @@ import {
   calculateAgeYears, 
   extractId 
 } from "./storage.js";
+import {
+  getBreedSelection,
+  initializeBreedPickers,
+  setBreedSelection,
+} from "./breed-picker.js";
 
 // -------------------------------------------------------------
 // FIREBASE CONFIGURATION & INITIALIZATION
@@ -76,6 +81,7 @@ const dogDialog = document.querySelector('#dog-dialog');
 
 // Form element inside the add dog dialog.
 const dogForm = document.querySelector('#dog-form');
+initializeBreedPickers(dogForm);
 
 // Trigger button used to open the add dog dialog.
 const openDogDialogBtn = document.querySelector('#open-dog-dialog');
@@ -799,7 +805,7 @@ dogForm?.addEventListener('submit', async (event) => {
 
   const formData = new FormData(dogForm);
   const name = formData.get('Name');
-  const breed = formData.get('Breed');
+  const breed = getBreedSelection(dogForm.querySelector("[data-breed-fields]"));
   const color = formData.get('Color') || '#315f4e';
   const dateOfBirth = formData.get('DateOfBirth');
   const notes = formData.get('Notes');
@@ -837,6 +843,7 @@ dogForm?.addEventListener('submit', async (event) => {
 
     selectedDogId = docRef.id;
     dogForm.reset();
+    setBreedSelection(dogForm.querySelector("[data-breed-fields]"), "");
     dogDialog.close();
   } catch (error) {
     window.alert(`Could not add dog: ${error.message}`);

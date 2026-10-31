@@ -793,6 +793,95 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 0 3px rgba(91, 137, 111, .12);
 }
 
+.breed-hint {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.breed-picker {
+  position: relative;
+  min-width: 0;
+  flex: 1;
+}
+
+.breed-fields {
+  display: grid;
+  gap: 7px;
+}
+
+.breed-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.breed-add,
+.breed-remove {
+  width: auto;
+  min-height: 30px;
+  padding: 5px 9px;
+  border: 1px solid #dfe6dc;
+  border-radius: 7px;
+  background: #f7f9f5;
+  color: #315f4e;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.breed-add {
+  justify-self: start;
+  margin-top: 2px;
+}
+
+.breed-add[hidden] {
+  display: none;
+}
+
+.breed-remove {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
+.breed-suggestions {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(38, 58, 47, .14);
+}
+
+.breed-suggestions[hidden] {
+  display: none;
+}
+
+.breed-suggestion {
+  display: block;
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #293a31;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.breed-suggestion:hover,
+.breed-suggestion:focus {
+  outline: none;
+  background: #f1f5f0;
+}
+
 /* Save session button alignment */
 .session-form .button {
   /* Align to left */

@@ -151,8 +151,16 @@
 
           <!-- Dog Breed input field matching schema 'Breed' -->
           <label>
-            Breed
-            <input type="text" name="Breed" maxlength="50" placeholder="e.g. Labrador Retriever" />
+            Breed <span class="breed-hint">Choose a common breed or add up to three breeds. Adding a fourth saves the breed as Mutt.</span>
+            <div class="breed-fields" data-breed-fields>
+              <div class="breed-row">
+                <div class="breed-picker">
+                  <input type="text" name="Breed" maxlength="50" placeholder="Search or enter a breed" autocomplete="off" aria-label="Dog breed" />
+                  <div class="breed-suggestions" role="listbox" aria-label="Breed suggestions" hidden></div>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="breed-add" data-add-breed>Add another breed</button>
           </label>
 
           <!-- Two-column row for Color and Profile Photo -->
