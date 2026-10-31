@@ -400,15 +400,24 @@ function render() {
         })
     : [];
 
-  const sessionCount = state.sessions.length;
+  const isAdmin = checkIsAdmin(currentUser.email);
+  const accountDogIds = new Set(
+    rawAllDogs
+      .filter((accountDog) => extractId(accountDog.OwnerId) === currentUser.uid)
+      .map((accountDog) => accountDog.id)
+  );
+  const accountSessions = state.sessions.filter((session) =>
+    accountDogIds.has(extractId(session.DogId))
+  );
+  const dashboardSessions = isAdmin ? state.sessions : accountSessions;
+  const sessionCount = dashboardSessions.length;
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const recentCount = state.sessions.filter((s) => {
+  const recentCount = dashboardSessions.filter((s) => {
     const time = s.OccurredAt?.toMillis ? s.OccurredAt.toMillis() : new Date(s.OccurredAt).getTime();
     return time >= sevenDaysAgo;
   }).length;
 
   const activeDogAge = dog ? calculateAgeYears(dog.DateOfBirth) : 0;
-  const isAdmin = checkIsAdmin(currentUser.email);
 
   root.innerHTML = `
     ${buildAdminPanel()}
