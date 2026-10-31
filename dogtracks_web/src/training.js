@@ -161,6 +161,24 @@ controls.innerHTML = `
     </div>
     <div class="session-list" data-session-list></div>
   </section>
+  <dialog class="session-dialog" aria-labelledby="session-dialog-title">
+    <div class="dialog-card session-dialog-card">
+      <div class="dialog-header">
+        <h2 id="session-dialog-title" data-dialog-behavior></h2>
+        <button type="button" class="icon-button" data-close-session-dialog aria-label="Close session details">×</button>
+      </div>
+      <p class="session-dialog-dog" data-dialog-dog></p>
+      <p class="session-dialog-date" data-dialog-date></p>
+      <section class="session-dialog-field" aria-labelledby="session-dialog-trigger-label">
+        <h3 id="session-dialog-trigger-label">Trigger</h3>
+        <p data-dialog-trigger></p>
+      </section>
+      <section class="session-dialog-field" aria-labelledby="session-dialog-notes-label">
+        <h3 id="session-dialog-notes-label">Notes</h3>
+        <p data-dialog-notes></p>
+      </section>
+    </div>
+  </dialog>
 `;
 
 trainingRoot.replaceChildren(controls);
@@ -174,6 +192,12 @@ const dateToInput = controls.querySelector("[data-date-to]");
 const sortInput = controls.querySelector("[data-sort]");
 const sessionList = controls.querySelector("[data-session-list]");
 const sessionCount = controls.querySelector("[data-session-count]");
+const sessionDialog = controls.querySelector(".session-dialog");
+const dialogBehavior = controls.querySelector("[data-dialog-behavior]");
+const dialogDog = controls.querySelector("[data-dialog-dog]");
+const dialogDate = controls.querySelector("[data-dialog-date]");
+const dialogTrigger = controls.querySelector("[data-dialog-trigger]");
+const dialogNotes = controls.querySelector("[data-dialog-notes]");
 
 state.dogs
   .slice()
@@ -238,6 +262,11 @@ function renderSession(session) {
   const item = document.createElement("article");
   item.className = "session-item";
 
+  const openButton = document.createElement("button");
+  openButton.className = "session-open-button";
+  openButton.type = "button";
+  openButton.setAttribute("aria-label", `View session: ${session.behavior || "Unspecified behavior"}`);
+
   const icon = document.createElement("span");
   icon.className = "session-icon";
   icon.setAttribute("aria-hidden", "true");
@@ -251,11 +280,7 @@ function renderSession(session) {
   const context = document.createElement("p");
   context.className = "session-context";
   const dogName = dogNames.get(session.dogId) || "Unknown dog";
-  context.textContent = [
-    dogName,
-    session.trigger ? `Trigger: ${session.trigger}` : "",
-    session.notes || "",
-  ].filter(Boolean).join(" · ");
+  context.textContent = dogName;
 
   details.append(behavior, context);
 
@@ -269,7 +294,26 @@ function renderSession(session) {
     date.textContent = "Date unavailable";
   }
 
-  item.append(icon, details, date);
+  const toggleHint = document.createElement("span");
+  toggleHint.className = "session-open-icon";
+  toggleHint.setAttribute("aria-hidden", "true");
+  toggleHint.textContent = "›";
+
+  const metadata = document.createElement("span");
+  metadata.className = "session-metadata";
+  metadata.append(date, toggleHint);
+  openButton.append(icon, details, metadata);
+
+  openButton.addEventListener("click", () => {
+    dialogBehavior.textContent = session.behavior || "Unspecified behavior";
+    dialogDog.textContent = dogName;
+    dialogDate.textContent = occurredAt ? formatSessionDate(occurredAt) : "Date unavailable";
+    dialogTrigger.textContent = session.trigger || "No trigger recorded.";
+    dialogNotes.textContent = session.notes || "No notes recorded.";
+    sessionDialog.showModal();
+  });
+
+  item.append(openButton);
   return item;
 }
 
@@ -320,6 +364,13 @@ controls.querySelector("[data-clear-filters]").addEventListener("click", () => {
   dateToInput.value = "";
   sortInput.value = "recent";
   renderSessions();
+});
+
+controls.querySelector("[data-close-session-dialog]")
+  .addEventListener("click", () => sessionDialog.close());
+
+sessionDialog.addEventListener("click", (event) => {
+  if (event.target === sessionDialog) sessionDialog.close();
 });
 
 renderSessions();

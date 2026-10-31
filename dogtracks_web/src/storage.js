@@ -5,6 +5,8 @@
 import { 
   collection, 
   doc, 
+  setDoc,
+  getDoc,
   addDoc, 
   deleteDoc, 
   getDocs, 
@@ -27,6 +29,9 @@ export function calculateAgeYears(birthDate) {
 
   // Calculate elapsed time in milliseconds from birth to current time.
   const diffMs = Date.now() - dob.getTime();
+
+  // If birth date is in the future, return 0 years.
+  if (diffMs < 0) return 0;
 
   // Convert elapsed milliseconds to a Date relative to 1970 epoch.
   const ageDate = new Date(diffMs);
@@ -87,14 +92,32 @@ export async function authenticateDatabaseUser(db, email, password) {
   };
 }
 
-// Creates a new user record in the 'Users' collection directly matching your console schema.
-export async function createUserProfile(db, { name, email, password, latitude, longitude }) {
-  // Construct GeoPoint from latitude and longitude coordinates.
-  const addressGeoPoint = new GeoPoint(Number(latitude) || 0, Number(longitude) || 0);
+// Checks if a Firestore user document exists by UID; if not, creates it after email verification.
+export async function ensureUserProfileCreated(db, userId, { name, email, password }) {
+  const userRef = doc(db, "Users", userId);
+  const snap = await getDoc(userRef);
 
+  if (!snap.exists()) {
+    const userPayload = {
+      Address: new GeoPoint(0, 0),
+      CreatedAt: Timestamp.now(),
+      Email: String(email).trim(),
+      Name: String(name || email.split('@')[0]).trim(),
+      Password: String(password || ''),
+    };
+
+    await setDoc(userRef, userPayload);
+    return { uid: userId, ...userPayload };
+  }
+
+  return { uid: snap.id, ...snap.data() };
+}
+
+// Creates a new user record in the 'Users' collection without requiring latitude/longitude coordinates.
+export async function createUserProfile(db, { name, email, password, address = null }) {
   // Construct user payload strictly adhering to the casing shown in your console screenshot.
   const userPayload = {
-    Address: addressGeoPoint,
+    Address: address || new GeoPoint(0, 0),
     CreatedAt: Timestamp.now(),
     Email: String(email).trim(),
     Name: String(name).trim(),
@@ -111,30 +134,71 @@ export async function createUserProfile(db, { name, email, password, latitude, l
   };
 }
 
+// Cascades deletion of all dogs, sessions, and profile data belonging to a user.
+// Cascades deletion of all dogs, sessions, and profile data belonging to a user.
+export async function deleteUserAccount(db, userId) {
+  if (!userId) throw new Error('Missing user ID for account deletion.');
+
+  try {
+    // 1. Fetch all dogs and identify those owned by this user
+    const dogsSnapshot = await getDocs(collection(db, "Dogs"));
+    const userDogIds = [];
+
+    dogsSnapshot.docs.forEach((docSnap) => {
+      const data = docSnap.data();
+      const rawOwner = data?.OwnerId;
+      const ownerId = extractId(rawOwner);
+
+      // Matches string ID or DocumentReference ID
+      if (ownerId === userId) {
+        userDogIds.push(docSnap.id);
+      }
+    });
+
+    // 2. Cascade delete all dogs and their related training sessions
+    for (const dogId of userDogIds) {
+      await deleteDog(db, dogId);
+    }
+
+    // 3. Delete the user profile document in the Users collection
+    const userRef = doc(db, "Users", userId);
+    await deleteDoc(userRef);
+
+    return true;
+  } catch (error) {
+    console.error("deleteUserAccount storage error:", error);
+    throw error;
+  }
+}
+
 // -------------------------------------------------------------
 // DOG PROFILE CRUD
 // -------------------------------------------------------------
-// Create a new dog record conforming to the strict schema (including Color and PhotoDataUrl).
+// Create a new dog record conforming to strict schema with date validation.
 export async function createDog(db, input, ownerId = null) {
   // Validate and trim the dog's name (required field).
   const name = String(input?.Name ?? input?.name ?? '').trim();
   if (!name) throw new Error('Enter a name for the dog.');
 
-  // Initialize birth date placeholder.
-  let dobDate = new Date();
-
-  // Check if a specific DateOfBirth was submitted.
-  if (input?.DateOfBirth) {
-    dobDate = new Date(input.DateOfBirth);
-  // Fallback: estimate DateOfBirth from ageYears if provided by form.
-  } else if (input?.ageYears !== undefined && input?.ageYears !== '') {
-    const years = Math.max(0, Math.min(40, Number(input.ageYears) || 0));
-    dobDate.setFullYear(dobDate.getFullYear() - years);
+  // Validate DateOfBirth input.
+  if (!input?.DateOfBirth) {
+    throw new Error('Please select a valid date of birth.');
   }
 
-  // Ensure dobDate is valid; fallback to current time if conversion broke.
+  // Split date string to extract year, month, and day without timezone offsets.
+  const [year, month, day] = input.DateOfBirth.split('-').map(Number);
+  const dobDate = new Date(year, month - 1, day);
+
   if (Number.isNaN(dobDate.getTime())) {
-    dobDate = new Date();
+    throw new Error('Please select a valid date of birth.');
+  }
+
+  // Compare against local end-of-day today.
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+
+  if (dobDate.getTime() > endOfToday.getTime()) {
+    throw new Error('Invalid Date: Date of birth cannot be in the future.');
   }
 
   // Wrap the JS date in a Firestore Timestamp object.
@@ -153,8 +217,8 @@ export async function createDog(db, input, ownerId = null) {
   const dogPayload = {
     Name: name,
     Breed: String(input?.Breed ?? input?.breed ?? '').trim(),
-    Color: colorHex,                          // Hex color string (Named Color)
-    PhotoDataUrl: photoDataUrl,                // Base64 data string (Named PhotoDataUrl)
+    Color: colorHex,
+    PhotoDataUrl: photoDataUrl,
     DateOfBirth: dateOfBirthTimestamp,
     Notes: String(input?.Notes ?? input?.notes ?? '').trim(),
     OwnerId: ownerRef,
@@ -226,19 +290,13 @@ export async function createSession(db, input) {
 // -------------------------------------------------------------
 // LOAD ALL DATA FROM FIRESTORE (Dogs + Sessions)
 // -------------------------------------------------------------
-
 export async function loadState(db, { ownerId, isAdmin = false } = {}) {
-
   // Fetch dogs
-
   const dogSnapshot = await getDocs(collection(db, "Dogs"));
 
-  const dogs = dogSnapshot.docs.filter(docSnap => {
-
+  const dogs = dogSnapshot.docs.filter((docSnap) => {
     return isAdmin || (ownerId && extractId(docSnap.data().OwnerId) === ownerId);
-
-  }).map(docSnap => {
-
+  }).map((docSnap) => {
     const data = docSnap.data();
     return {
       id: docSnap.id,
@@ -252,20 +310,14 @@ export async function loadState(db, { ownerId, isAdmin = false } = {}) {
     };
   });
 
-  const dogIds = new Set(dogs.map(dog => dog.id));
-
-
+  const dogIds = new Set(dogs.map((dog) => dog.id));
 
   // Fetch sessions
-
   const sessionSnapshot = await getDocs(collection(db, "Sessions"));
 
-  const sessions = sessionSnapshot.docs.filter(docSnap => {
-
+  const sessions = sessionSnapshot.docs.filter((docSnap) => {
     return dogIds.has(extractId(docSnap.data().DogId));
-
-  }).map(docSnap => {
-
+  }).map((docSnap) => {
     const data = docSnap.data();
     return {
       id: docSnap.id,
