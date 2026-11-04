@@ -467,10 +467,10 @@ function render() {
       </a>
 
       <a href="analytics.html" class="stat-card" style="text-decoration: none; color: inherit;">
-        <span class="stat-icon" aria-hidden="true">🕊</span>
+        <span class="stat-icon" aria-hidden="true">↗</span>
         <div>
-          <p class="stat-value">${archivedDogs.length}</p>
-          <p class="stat-label">Memorial Archives</p>
+          <p class="stat-value">${recentCount}</p>
+          <p class="stat-label">Entries this week</p>
         </div>
       </a>
     </section>
